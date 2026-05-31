@@ -143,7 +143,7 @@ Because ```digit_length = 200```,
   Continued gaps are then used for the randomness in changing that value.
   You can alter this "private_seeds" file.
 * A key is a 200-digit prime. Its randomness comes from
-  a concatenation of prime gaps near a seed (near a 200-digit value).
+  a concatenation of prime gaps near a seed.
 * A ciphertext (encrypted item) is 200 digits, and is
   a concatenation of prime gaps near a key.
 * "Near which private prime, will I find these public gaps?"
