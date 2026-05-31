@@ -146,6 +146,8 @@ Because ```digit_length = 200```,
   a concatenation of prime gaps near a 200-digit prime.
 * A ciphertext (encrypted item) is 200 digits, and is
   a concatenation of prime gaps near a key.
+* "Near which private prime, will I find these public gaps?"
+  is at least as statistically strong as semiprime factorization.
 
 <br>
 <br>
