@@ -1,13 +1,24 @@
-/*Version 8.0.1 - Get a number only you can modify--which anyone can verify               Run it: "apt install g++ geany". Open the .cpp in Geany. Hit F9 once. F5 to run.
-(infinite data authentication independent of encryption type and symmetry.)
+//YOUR CONTROLS:                                                                Run it: "apt install g++ geany libgmp-dev libssl-dev". Open the .cpp in Geany.
+int digit_length = 200; //50000 max                                             //Append "-lgmp -lcrypto" to Geany's compile & build commands. Hit F9 once. F5 to run.
+//digit_length is the length of a (jumping) value, near which
+//prime gaps are found, for randomness. Bigger = more secure.
 
-Using rolling-code 3.1.1 */
+/*Version 9.0.0
+Get a secure number only you can modify, which anyone can
+keep verifying, and you can insert personal messages (data
+authentication independent of encryption type & symmetry).*/
 
+#include <cstring>
+#include <filesystem>
 #include <fstream>
+#include <gmp.h>
 #include <iostream>
+#include <openssl/evp.h>
 using namespace std;
 int main()
-{	ifstream in_stream;
+{	int raw_byte;
+	char file_byte;
+	ifstream in_stream;
 	ofstream out_stream;
 	
 	cout << "\n(1) Create   Your number which others save."
@@ -19,468 +30,107 @@ int main()
 	int user_option; cin >> user_option;
 	if((user_option != 1) && (user_option != 2) && (user_option != 3)) {cout << "\nInvalid.\n"; return 0;}
 	
-	
-	
-	
-	
 	//_______________________________________________________Create___________________________________________________//
 	if(user_option == 1)
-	{	
-		/* SUMMARY
-		-------------
-		* 512 keys.
-		* 512 ciphertext using keys.
-		* sha512sum of ciphertext list (your number.)
-		* (RAM of sensitive data overwritten.) */
-		
-		//Checks if files already exists.
+	{	//Checks if files already exists.
 		in_stream.open("Personal");
-		if(in_stream.fail() == false) {cout << "\n\"Personal\" already exists. Move it.\n"; in_stream.close(); return 0;}
+		if(!in_stream.fail()) {cout << "\n\"Personal\" folder already exists. Move it.\n"; in_stream.close(); return 0;}
 		in_stream.close();
 		
-		//Generates 512 keys--each 1,000 digits.
-		//The following verbatim from rolling-code.cpp, except user knobs, cout, renamed "RC_seeds", renamed "Code", extraction, out_stream, comments, absurd, mkdir.
-		{	long long code_length_in_thousands = 512;
-			bool Unix_time_supplement = true; //Set to true for codes of unique randomness, even with the same seeds file. DEFAULT = true.
+		//Creates seeds file.
+		{	//Gets path, fixes it if dropped.
+			cout << "Just once, drop/enter any file of " << digit_length << "+ random first bytes:\n";
+			string path; getline(cin, path); if(path[0] == '\0') {getline(cin, path);}
+			if(path[0] == '\'') {path.erase(0, 1); path.pop_back(); path.pop_back();}
+			in_stream.open(path); if(in_stream.fail()) {cout << "\nNo path " << path << "\n"; return 1;} in_stream.close();
 			
-			//Creates seeds file if missing.
-			const char seeds_file_name[50] = {"Personal/private/AS_seeds"};
-			char garbage_byte_for_seeds_file;
-			{	//..........Checks if seeds file exists.
-				in_stream.open(seeds_file_name);
-				bool existence_of_seeds_file = true;
-				if(in_stream.fail() == true) {existence_of_seeds_file = false;}
-				in_stream.close();
-				
-				if(existence_of_seeds_file == false)
-				{	//..........Gets path to file from user.
-					cout << "Just once, drop/enter any file"
-					     << "\nof 1,000+ random first bytes:\n";
-					
-					//..........Gets path then fixes it if drag-n-dropped, regardless of single-quote presence and "enter"
-					//..........not being cleared, meaning you can have options before this, where the user presses enter.
-					char path_to_file_for_seeds[10000] = {'\0'};
-					{	for(int a = 0; a < 10000; a++) {path_to_file_for_seeds[a] = '\0';}
-						cin.getline(path_to_file_for_seeds, 10000);
-						if(path_to_file_for_seeds[0] == '\0')
-						{	for(int a = 0; a < 10000; a++) {path_to_file_for_seeds[a] = '\0';}
-							cin.getline(path_to_file_for_seeds, 10000);
-						}
-						if(path_to_file_for_seeds[0] == '\0') {cout << "\nNo path given.\n"; return 0;}
-						
-						//..........Removes last space in path_to_file_for_seeds[].
-						bool existence_of_last_space = false;
-						for(int a = 9999; a > 0; a--)
-						{	if(path_to_file_for_seeds[a] != '\0')
-							{	if(path_to_file_for_seeds[a] == ' ') {path_to_file_for_seeds[a] = '\0'; existence_of_last_space = true;}
-								break;
-							}
-						}
-						
-						//..........Removes encapsulating single-quotes in path_to_file_for_seeds[].
-						bool existence_of_encapsulating_single_quotes = false;
-						if(path_to_file_for_seeds[0] == '\'')
-						{	for(int a = 0; a < 9999; a++)
-							{	path_to_file_for_seeds[a] = path_to_file_for_seeds[a + 1];
-								if(path_to_file_for_seeds[a] == '\0') 
-								{	if(path_to_file_for_seeds[a - 1] != '\'') {cout << "\nBad path.\n"; return 0;}
-									path_to_file_for_seeds[a - 1] = '\0';
-									existence_of_encapsulating_single_quotes = true;
-									break;
-								}
-							}
-						}
-						
-						//..........Replaces all "'\''" with "'" in path_to_file_for_seeds[].
-						int single_quote_quantity = 0;
-						for(int a = 0; a < 10000; a++)
-						{	if(path_to_file_for_seeds[a] == '\'') {single_quote_quantity++;}
-						}
-						
-						if((single_quote_quantity                     >    0)
-						&& (existence_of_last_space                  == true)
-						&& (existence_of_encapsulating_single_quotes == true))
-						{	if((single_quote_quantity % 3) != 0) {cout << "\nBad path.\n"; return 0;}
-							
-							for(int a = 0; a < 9997; a++)
-							{	if(path_to_file_for_seeds[a] == '\'')
-								{	int temp = (a + 1);
-									for(; temp < 9997; temp++)
-									{	path_to_file_for_seeds[temp] = path_to_file_for_seeds[temp + 3];
-									}
-								}
-							}
-						}
-					}
-					
-					//..........Loads seeds[] with given file's 1,000 Bytes.
-					in_stream.open(path_to_file_for_seeds);
-					if(in_stream.fail() == true) {cout << "\nNo such file.\n"; in_stream.close(); return 0;}
-					unsigned int seeds[1000];
-					for(int a = 0; a < 1000; a++)
-					{	in_stream.get(garbage_byte_for_seeds_file);
-						if(in_stream.eof() == true)
-						{	for(int b = 0; b < 1000; b++) {seeds[b] = 0; seeds[b] = 4294967295;} //..........Overwrites RAM of array unsigned int seeds[1000].
-							cout << "\n\nFile too small.\n\n"; in_stream.close(); return 0;
-						}
-						
-						int normal_byte = garbage_byte_for_seeds_file;
-						if(normal_byte < 0) {normal_byte += 256;}
-						seeds[a] = normal_byte;
-					}
-					in_stream.close();
-					
-					system("mkdir Personal"        );
-					system("mkdir Personal/private");
-					
-					//..........Creates seeds file (digits, and better distributed.)
-					out_stream.open(seeds_file_name);
-					srand(seeds[0]);
-					for(int a = 0; a < 1000; a++)
-					{	long long temp = ((seeds[a] + rand()) % 10);
-						out_stream << char(temp + 48);
-					}
-					out_stream.close();
-					
-					//..........Overwrites RAM of array unsigned int seeds[1000].
-					for(int a = 0; a < 1000; a++) {seeds[a] = 0; seeds[a] = 4294967295;}
-				}
-			}
+			//Checks file size.
+			long long size = filesystem::file_size(path);
+			if(size < digit_length) {cout << "\nFile too small.\n"; return 1;}
 			
-			//Generates randomness.
-			{	long long temp_overflow_for_randomness;
-				
-				//..........Loads seeds[] with seeds file.
-				in_stream.open(seeds_file_name);
-				unsigned int seeds[1000];
-				for(int a = 0; a < 1000; a++)
-				{	in_stream.get(garbage_byte_for_seeds_file);
-					int normal_byte = garbage_byte_for_seeds_file;
-					if(normal_byte < 0) {normal_byte += 256;}
-					seeds[a] = normal_byte;
-					
-					seeds[a] -= 48;
-					if((in_stream.eof() == true) || (seeds[a] > 9))
-					{	for(int b = 0; b < 1000; b++) {seeds[b] = 0; seeds[b] = 4294967295;} //..........Overwrites RAM of array unsigned int seeds[1000].
-						cout << "\n\nBad seeds file.\n\n"; in_stream.close(); return 0;
-					}
-				}
-				in_stream.close();
-				
-				//..........Makes 100 10-digit actual seeds based on seeds[]. (Strings together 10 contiguous digits, 100 times.)
-				unsigned int actual_seeds[100] = {0};
-				int seeds_read_bookmark = 0;
-				for(int a = 0; a < 100; a++)
-				{	temp_overflow_for_randomness = 0;
-					for(int b = 0; b < 10; b++)
-					{	temp_overflow_for_randomness += seeds[seeds_read_bookmark];
-						if(b < 9) {temp_overflow_for_randomness *= 10;}
-						seeds_read_bookmark++;
-					}
-					
-					actual_seeds[a] = (temp_overflow_for_randomness % 4294967296);
-				}
-				
-				//..........Supplements all actual_seeds[] with randomness based on Unix time.
-				if(Unix_time_supplement == true)
-				{	srand(time(0));
-					for(int a = 0; a < 100; a++)
-					{	temp_overflow_for_randomness = (rand() % 4294967296);
-						temp_overflow_for_randomness += actual_seeds[a];
-						actual_seeds[a] = (temp_overflow_for_randomness % 4294967296);
-					}
-				}
-				
-				//..........Generator house.
-				out_stream.open("Personal/private/512_keys", ios::app);
-				unsigned int randomness[1000] = {0};
-				for(long long a = 0; a < code_length_in_thousands; a++)
-				{	
-					//..........Generator powerhouse.
-					for(int b = 0; b < 100; b++)
-					{	srand(actual_seeds[b]);
-						for(int c = 0; c < 1000; c++) {randomness[c] += rand(); randomness[c] %= 256;} //..........Fills randomness[] (100x per 1,000-char code.)
-						temp_overflow_for_randomness = (actual_seeds[99 - b] + rand()); //..........Modifies inverse actual_seeds[].
-						actual_seeds[99 - b] = (temp_overflow_for_randomness % 4294967296);
-						
-						srand(actual_seeds[99 - b]);  //..........Now using that inverse seed.
-						for(int c = 0; c < 1000; c++) //..........Swaps EACH & EVERY element in randomness[] with randomly chosen (100,000x per 1,000-char code.)
-						{	int random_element = (rand() % 1000);
-							for(; random_element == c;) {random_element = (rand() % 1000);}
-							
-							unsigned int temp_element = randomness[random_element];
-							randomness[random_element] = randomness[c];
-							randomness[c] = temp_element;
-						}
-						temp_overflow_for_randomness = (actual_seeds[b] + rand()); //..........Modifies current actual_seeds[].
-						actual_seeds[b] = (temp_overflow_for_randomness % 4294967296);
-					}
-					
-					//..........Makes 100 10-digit new actual seeds based on randomness[]. (!!! Adds to current actual_seeds. !!! The generated Code is NOT alone responsible for new actual_seeds. !!!) (Strings together 10 contiguous digits, 100 times.)
-					int randomness_read_bookmark = 0;
-					for(int b = 0; b < 100; b++)
-					{	temp_overflow_for_randomness = 0;
-						for(int c = 0; c < 10; c++)
-						{	temp_overflow_for_randomness += (randomness[randomness_read_bookmark] % 10);
-							if(c < 9) {temp_overflow_for_randomness *= 10;}
-							randomness_read_bookmark++;
-						}
-						
-						temp_overflow_for_randomness += actual_seeds[b];
-						actual_seeds[b] = (temp_overflow_for_randomness % 4294967296);
-					}
-					
-					for(int b = 0; b < 1000; b++) {out_stream << char((randomness[b] % 10) + 48);}
-				}
-				out_stream.close();
-				
-				//..........Overwrites seeds file.
-				out_stream.open(seeds_file_name);
-				for(int a = 0; a < 100; a++)
-				{	unsigned int place = 10;
-					for(int b = 0; b < 9; b++)
-					{	if(actual_seeds[a] < place) {out_stream << "0";}
-						place *= 10;
-					}
-					out_stream << actual_seeds[a];
-				}
-				out_stream << "\n\nSeeds are always rolling and supplemented with Unix time.\n";
-				out_stream.close();
-				
-				//..........Overwrites RAM of variable long long temp_overflow_for_randomness.
-				temp_overflow_for_randomness = 0; temp_overflow_for_randomness = -9223372036854775807; temp_overflow_for_randomness = 9223372036854775807;
-				
-				//..........Overwrites RAM of arrays unsigned int seeds[1000] and unsigned int randomness[1000].
-				for(int a = 0; a < 1000; a++) {seeds[a] = 0; seeds[a] = 4294967295; randomness[a] = 0; randomness[a] = 4294967295;}
-				
-				//..........Overwrites RAM of array unsigned int actual_seeds[100].
-				for(int a = 0; a < 100; a++) {actual_seeds[a] = 0; actual_seeds[a] = 4294967295;}
+			//Copies bytes, writes them modified.
+			filesystem::create_directories("Personal/private");
+			in_stream.open(path);
+			out_stream.open("Personal/private/private_seeds");
+			for(int a = 0; a < digit_length; a++)
+			{	in_stream.get(file_byte); raw_byte = file_byte;
+				if(raw_byte < 0) {raw_byte += 256;} out_stream.put((raw_byte % 10) + 48);
 			}
+			in_stream.close();
+			out_stream.close();
 		}
 		
-		//Generates 512 ciphertext--each 1,000 characters (33 to 126; no space.) - From those 512 keys made above.
-		//The following is components from rolling-code.cpp.
+		//Loads seeds.
+		char seeds[50001] = {'\0'}; cout << "Wait ~10 minutes...\n";
+		long long size = filesystem::file_size("Personal/private/private_seeds"); if(size != digit_length) {cout << "\nBad private_seeds.\n"; return 1;} //Checks file size.
+		in_stream.open("Personal/private/private_seeds"); for(int a = 0; a < digit_length; a++) {in_stream.get(seeds[a]);} in_stream.close();            //Loads value.
+		if(seeds[0] == '0') {seeds[0] = '5';}                                                                                                            //Forces its length.
+		mpz_t in, out; mpz_init(in); mpz_init(out); mpz_set_str(in, seeds, 10); mpz_nextprime(out, in); mpz_get_str(seeds, 10, out);                     //Makes it prime.
+		mpz_t prime, two; mpz_init(prime); mpz_init(two); mpz_set_str(prime, seeds, 10); mpz_set_ui(two, 2);                                             //Dedicates.
+		
+		//Generates 512 keys (randomness). Each key is a prime of length digit_length.
+		out_stream.open("Personal/private/512_keys");
+		for(int a = 0; a < 512; a++)
+		{	//Generates randomness (by concatenating consecutive prime gaps).
+			string key; unsigned long long wanted_length = digit_length;
+			for(long long gap = 2; key.length() < wanted_length;)
+			{	mpz_add(prime, prime, two);
+				int primality = mpz_probab_prime_p(prime, 25);
+				if(primality == false) {gap += 2;}
+				else {key += to_string(gap); gap = 2;}
+			}
+			key.resize(digit_length);
+			char tmp[50001] = {'\0'}; strcpy(tmp, key.c_str()); mpz_set_str(in, tmp, 10); mpz_nextprime(out, in); mpz_get_str(tmp, 10, out); key = tmp; //Makes it prime.
+			out_stream << key << "\n";
+		}
+		out_stream.close();
+		
+		//Updates seeds file.
+		out_stream.open("Personal/private/private_seeds");
+		for(long long gap = 2, a = 0; a < digit_length;)
+		{	mpz_add(prime, prime, two);
+			int primality = mpz_probab_prime_p(prime, 25);
+			if(primality == false) {gap += 2;}
+			else {mpz_get_str(seeds, 10, prime); out_stream << seeds[digit_length - 2]; gap = 2; a++;}
+		}
+		out_stream.close();
+		
+		//Generates ciphertext.
+		//(Generates 512 encrypted items using the 512 keys. Each item is prime gaps following a key).
 		in_stream.open("Personal/private/512_keys");
 		out_stream.open("Personal/private/512_ciphertext");
-		for(int loop = 0; loop < 512; loop++)
-		{	long long temp_overflow_for_randomness;
-			char garbage_byte_for_seeds_file;
+		for(int a = 0; a < 512; a++)
+		{	char key[50001] = {'\0'}; string line; getline(in_stream, line); strcpy(key, line.c_str());
+			mpz_set_str(prime, key, 10);
 			
-			//..........Loads seeds[] with 1 key at-a-time.
-			unsigned int seeds[1000];
-			for(int a = 0; a < 1000; a++)
-			{	in_stream.get(garbage_byte_for_seeds_file);
-				int normal_byte = garbage_byte_for_seeds_file;
-				if(normal_byte < 0) {normal_byte += 256;}
-				seeds[a] = normal_byte;
-				
-				seeds[a] -= 48;
-				if((in_stream.eof() == true) || (seeds[a] > 9))
-				{	for(int b = 0; b < 1000; b++) {seeds[b] = 0; seeds[b] = 4294967295;} //..........Overwrites RAM of array unsigned int seeds[1000].
-					cout << "\n\nBad keys.\n\n"; in_stream.close(); out_stream.close(); return 0;
-				}
+			//Generates randomness (by concatenating consecutive prime gaps).
+			string ciphertext; unsigned long long wanted_length = digit_length;
+			for(long long gap = 2; ciphertext.length() < wanted_length;)
+			{	mpz_add(prime, prime, two);
+				int primality = mpz_probab_prime_p(prime, 25);
+				if(primality == false) {gap += 2;}
+				else {ciphertext += to_string(gap); gap = 2;}
 			}
-			
-			//..........Makes 100 10-digit actual seeds based on seeds[]. (Strings together 10 contiguous digits, 100 times.)
-			unsigned int actual_seeds[100] = {0};
-			int seeds_read_bookmark = 0;
-			for(int a = 0; a < 100; a++)
-			{	temp_overflow_for_randomness = 0;
-				for(int b = 0; b < 10; b++)
-				{	temp_overflow_for_randomness += seeds[seeds_read_bookmark];
-					if(b < 9) {temp_overflow_for_randomness *= 10;}
-					seeds_read_bookmark++;
-				}
-				
-				actual_seeds[a] = (temp_overflow_for_randomness % 4294967296);
-			}
-			
-			//..........Generator powerhouse.
-			unsigned int randomness[1000] = {0};
-			for(int b = 0; b < 100; b++)
-			{	srand(actual_seeds[b]);
-				for(int c = 0; c < 1000; c++) {randomness[c] += rand(); randomness[c] %= 256;} //..........Fills randomness[] (100x per 1,000-char code.)
-				temp_overflow_for_randomness = (actual_seeds[99 - b] + rand()); //..........Modifies inverse actual_seeds[].
-				actual_seeds[99 - b] = (temp_overflow_for_randomness % 4294967296);
-				
-				srand(actual_seeds[99 - b]);  //..........Now using that inverse seed.
-				for(int c = 0; c < 1000; c++) //..........Swaps EACH & EVERY element in randomness[] with randomly chosen (100,000x per 1,000-char code.)
-				{	int random_element = (rand() % 1000);
-					for(; random_element == c;) {random_element = (rand() % 1000);}
-					
-					unsigned int temp_element = randomness[random_element];
-					randomness[random_element] = randomness[c];
-					randomness[c] = temp_element;
-				}
-				temp_overflow_for_randomness = (actual_seeds[b] + rand()); //..........Modifies current actual_seeds[].
-				actual_seeds[b] = (temp_overflow_for_randomness % 4294967296);
-			}
-			
-			for(int b = 0; b < 1000; b++) {out_stream << char((randomness[b] % 94) + 33);}
-			
-			if(loop == 511)
-			{	//..........Overwrites RAM of variable long long temp_overflow_for_randomness.
-				temp_overflow_for_randomness = 0; temp_overflow_for_randomness = -9223372036854775807; temp_overflow_for_randomness = 9223372036854775807;
-				
-				//..........Overwrites RAM of arrays unsigned int seeds[1000] and unsigned int randomness[1000].
-				for(int a = 0; a < 1000; a++) {seeds[a] = 0; seeds[a] = 4294967295; randomness[a] = 0; randomness[a] = 4294967295;}
-				
-				//..........Overwrites RAM of array unsigned int actual_seeds[100].
-				for(int a = 0; a < 100; a++) {actual_seeds[a] = 0; actual_seeds[a] = 4294967295;}
-			}
+			ciphertext.resize(digit_length); out_stream << ciphertext;
 		}
 		in_stream.close();
 		out_stream.close();
 		
-		//Takes the sha512sum hash of file "ciphertext".
-		system("echo -n \"$(sha512sum Personal/private/512_ciphertext | cut -d \' \' -f 1)\" > Personal/number"); //..........Extra commands for omitting dir, \n.
+		//Creates the number file (takes a sha512sum hash of the 512 ciphertext).
+		string input; in_stream.open("Personal/private/512_ciphertext"); getline(in_stream, input); in_stream.close();
+		unsigned char hash[64]; EVP_Q_digest(nullptr, "SHA512", nullptr, input.c_str(), input.length(), hash, nullptr);
+		string sha512sum; char symbols[] = "0123456789abcdef"; for(int a = 0; a < 64; a++) {sha512sum += symbols[hash[a] >> 4]; sha512sum += symbols[hash[a] & 0xf];}
 		
-		cout << "\nYour \"Personal\" folder is ready. Publish your number.\n\n\n";
+		out_stream.open("Personal/number"); out_stream << sha512sum; out_stream.close();
+		cout << "\nYour \"Personal\" folder is ready. Publish your number.\n";
 	}
-	
-	
-	
-	
 	
 	//_______________________________________________________Modify___________________________________________________//
 	if(user_option == 2)
-	{	
-		/* SUMMARY
-		-------------
-		* Prompts user for message to be authenticated with event.
-		* Copies ciphertext to new file "public".
-		* Loads old keys to RAM.
-		* New keys.
-		* New ciphertext.
-		* sha512sum of new ciphertext list (your new number.)
-		* Writes user message to new file "representing_sha512sum_of".
-		* Appends new number to file "representing_sha512sum_of".
-		* Keeps appending 0s to file "representing_sha512sum_of" until its sha512sum hash is composed of 256 1 bits and 256 0 bits. (16 tries on average.)
-		* Appends only 256 old keys to file "public" (based on bits from hash in file "the_sha512sum".)
-		* Appends presence & absence indication to file "public".
-		* Appends user message and new number to file "public" (all from file "representing_sha512sum_of".)
-		* (RAM of sensitive data overwritten.) */
-		
-		//Gets path then fixes it if drag-n-dropped, regardless of single-quote presence and "enter"
-		//not being cleared, meaning you can have options before this, where the user presses enter.
-		cout << "Drop/enter personal folder:\n";
-		char path_to_file[10000] = {'\0'};
-		{	for(int a = 0; a < 10000; a++) {path_to_file[a] = '\0';}
-			cin.getline(path_to_file, 10000);
-			if(path_to_file[0] == '\0')
-			{	for(int a = 0; a < 10000; a++) {path_to_file[a] = '\0';}
-				cin.getline(path_to_file, 10000);
-			}
-			if(path_to_file[0] == '\0') {cout << "\nNo path given.\n"; return 0;}
-			
-			//..........Removes last space in path_to_file[].
-			bool existence_of_last_space = false;
-			for(int a = 9999; a > 0; a--)
-			{	if(path_to_file[a] != '\0')
-				{	if(path_to_file[a] == ' ') {path_to_file[a] = '\0'; existence_of_last_space = true;}
-					break;
-				}
-			}
-			
-			//..........Removes encapsulating single-quotes in path_to_file[].
-			bool existence_of_encapsulating_single_quotes = false;
-			if(path_to_file[0] == '\'')
-			{	for(int a = 0; a < 9999; a++)
-				{	path_to_file[a] = path_to_file[a + 1];
-					if(path_to_file[a] == '\0') 
-					{	if(path_to_file[a - 1] != '\'') {cout << "\nBad path.\n"; return 0;}
-						path_to_file[a - 1] = '\0';
-						existence_of_encapsulating_single_quotes = true;
-						break;
-					}
-				}
-			}
-			
-			//..........Replaces all "'\''" with "'" in path_to_file[].
-			int single_quote_quantity = 0;
-			for(int a = 0; a < 10000; a++)
-			{	if(path_to_file[a] == '\'') {single_quote_quantity++;}
-			}
-			
-			if((single_quote_quantity                     >    0)
-			&& (existence_of_last_space                  == true)
-			&& (existence_of_encapsulating_single_quotes == true))
-			{	if((single_quote_quantity % 3) != 0) {cout << "\nBad path.\n"; return 0;}
-				
-				for(int a = 0; a < 9997; a++)
-				{	if(path_to_file[a] == '\'')
-					{	int temp = (a + 1);
-						for(; temp < 9997; temp++)
-						{	path_to_file[temp] = path_to_file[temp + 3];
-						}
-					}
-				}
-			}
-			
-			in_stream.open(path_to_file);
-			if(in_stream.fail() == true) {cout << "\nNo such file or directory.\n"; in_stream.close(); return 0;}
-			in_stream.close();
-		}
-		
-		//Gets location of the first encountered end-null coming from the left in path_to_file[].
-		int path_to_file_null_bookmark;
-		for(int a = 0; a < 10000; a++) {if(path_to_file[a] == '\0') {path_to_file_null_bookmark = a; break;}}
-		
-		//Creates path to keys, ciphertext, AS_seeds, public, number, representing_sha512sum_of, and the_sha512sum.
-		char path_to_keys                     [10000] = {'\0'};
-		char path_to_ciphertext               [10000] = {'\0'};
-		char path_to_AS_seeds                 [10000] = {'\0'};
-		char path_to_public                   [10000] = {'\0'};
-		char path_to_number                   [10000] = {'\0'};
-		char path_to_representing_sha512sum_of[10000] = {'\0'};
-		char path_to_the_sha512sum            [10000] = {'\0'};
-		for(int a = 0; a < 10000; a++)
-		{	path_to_keys                     [a] = path_to_file[a];
-			path_to_ciphertext               [a] = path_to_file[a];
-			path_to_AS_seeds                 [a] = path_to_file[a];
-			path_to_public                   [a] = path_to_file[a];
-			path_to_number                   [a] = path_to_file[a];
-			path_to_representing_sha512sum_of[a] = path_to_file[a];
-			path_to_the_sha512sum            [a] = path_to_file[a];
-		}
-		
-		char temp_name_keys                     [100] = "/private/512_keys"                 ;
-		char temp_name_ciphertext               [100] = "/private/512_ciphertext"           ;
-		char temp_name_AS_seeds                 [100] = "/private/AS_seeds"                 ;
-		char temp_name_public                   [100] = "/public"                           ;
-		char temp_name_number                   [100] = "/number"                           ;
-		char temp_name_representing_sha512sum_of[100] = "/private/representing_sha512sum_of";
-		char temp_name_the_sha512sum            [100] = "/private/the_sha512sum"            ;
-		
-		for(int null = path_to_file_null_bookmark, a = 0; temp_name_keys                     [a] != '\0'; a++) {path_to_keys                     [null] = temp_name_keys                     [a]; null++;}
-		for(int null = path_to_file_null_bookmark, a = 0; temp_name_ciphertext               [a] != '\0'; a++) {path_to_ciphertext               [null] = temp_name_ciphertext               [a]; null++;}
-		for(int null = path_to_file_null_bookmark, a = 0; temp_name_AS_seeds                 [a] != '\0'; a++) {path_to_AS_seeds                 [null] = temp_name_AS_seeds                 [a]; null++;}
-		for(int null = path_to_file_null_bookmark, a = 0; temp_name_public                   [a] != '\0'; a++) {path_to_public                   [null] = temp_name_public                   [a]; null++;}
-		for(int null = path_to_file_null_bookmark, a = 0; temp_name_number                   [a] != '\0'; a++) {path_to_number                   [null] = temp_name_number                   [a]; null++;}
-		for(int null = path_to_file_null_bookmark, a = 0; temp_name_representing_sha512sum_of[a] != '\0'; a++) {path_to_representing_sha512sum_of[null] = temp_name_representing_sha512sum_of[a]; null++;}
-		for(int null = path_to_file_null_bookmark, a = 0; temp_name_the_sha512sum            [a] != '\0'; a++) {path_to_the_sha512sum            [null] = temp_name_the_sha512sum            [a]; null++;}
-		
-		//Checks if files exist.
-		bool existence = true;
-		in_stream.open(path_to_keys      ); if(in_stream.fail() == true) {cout << "\n\"512_keys\" missing."      ; existence = false;} in_stream.close();
-		in_stream.open(path_to_ciphertext); if(in_stream.fail() == true) {cout << "\n\"512_ciphertext\" missing."; existence = false;} in_stream.close();
-		in_stream.open(path_to_AS_seeds  ); if(in_stream.fail() == true) {cout << "\n\"AS_seeds\" missing."      ; existence = false;} in_stream.close();
-		if(existence == false) {return 0;}
-		
-		//Checks if files are empty.
-		char garbage_byte;
-		bool substance = true;
-		in_stream.open(path_to_keys      ); in_stream.get(garbage_byte); if(in_stream.eof() == true) {cout << "\n\"512_keys\" empty."      ; substance = false;} in_stream.close();
-		in_stream.open(path_to_ciphertext); in_stream.get(garbage_byte); if(in_stream.eof() == true) {cout << "\n\"512_ciphertext\" empty."; substance = false;} in_stream.close();
-		in_stream.open(path_to_AS_seeds  ); in_stream.get(garbage_byte); if(in_stream.eof() == true) {cout << "\n\"AS_seeds\" empty."      ; substance = false;} in_stream.close();
-		if(substance == false) {return 0;}
-		
-		//Checks that files have the right substance.
-		bool right_substance = true;
-		in_stream.open(path_to_keys      ); for(int a = 0; a < 512000; a++) {in_stream.get(garbage_byte); if((garbage_byte < 48) || (garbage_byte >  57)) {cout << "\n\"512_keys\" corrupted."      ; right_substance = false; break;}} in_stream.close();
-		in_stream.open(path_to_ciphertext); for(int a = 0; a < 512000; a++) {in_stream.get(garbage_byte); if((garbage_byte < 33) || (garbage_byte > 126)) {cout << "\n\"512_ciphertext\" corrupted."; right_substance = false; break;}} in_stream.close();
-		in_stream.open(path_to_AS_seeds  ); for(int a = 0; a <   1000; a++) {in_stream.get(garbage_byte); if((garbage_byte < 48) || (garbage_byte >  57)) {cout << "\n\"AS_seeds\" corrupted."      ; right_substance = false; break;}} in_stream.close();
-		if(right_substance == false) {return 0;}
+	{	//Gets path, fixes it if dropped.
+		cout << "Drop/enter Personal folder:\n"; string path; getline(cin, path); if(path[0] == '\0') {getline(cin, path);}
+		if(path[0] == '\'') {path.erase(0, 1); path.pop_back(); path.pop_back();}
+		in_stream.open(path); if(in_stream.fail()) {cout << "\nNo path " << path << "\n"; return 1;} in_stream.close();
 		
 		//Prompts user for message to be authenticated with event.
 		cout << "Enter message to be authenticated (9k char max) else press enter:\n";
@@ -490,269 +140,144 @@ int main()
 		bool existence_of_message = false;
 		if(message[0] != '\0') {existence_of_message = true;}
 		
+		//Creates paths.
+		string path_to_keys                      = path;   path_to_keys                      += "/private/512_keys"                 ;
+		string path_to_ciphertext                = path;   path_to_ciphertext                += "/private/512_ciphertext"           ;
+		string path_to_private_seeds             = path;   path_to_private_seeds             += "/private/private_seeds"            ;
+		string path_to_public                    = path;   path_to_public                    += "/public"                           ;
+		string path_to_number                    = path;   path_to_number                    += "/number"                           ;
+		string path_to_representing_sha512sum_of = path;   path_to_representing_sha512sum_of += "/private/representing_sha512sum_of";
+		string path_to_the_sha512sum             = path;   path_to_the_sha512sum             += "/private/the_sha512sum"            ;
+		
 		//Copies ciphertext to new file "public".
+		string line;
 		in_stream.open (path_to_ciphertext);
 		out_stream.open(path_to_public    );
-		for(int a = 0; a < 512000; a++) {in_stream.get(garbage_byte); out_stream.put(garbage_byte);}
+		getline(in_stream, line); out_stream << line << "\n";
 		in_stream.close();
 		out_stream.close();
 		
 		//Loads old keys to RAM.
-		char old_keys[512000];
+		string old_keys;
 		in_stream.open(path_to_keys);
-		for(int a = 0; a < 512000; a++) {in_stream.get(old_keys[a]);}
+		for(int a = 0; a < 512; a++) {getline(in_stream, line); old_keys += line;}
 		in_stream.close();
 		
-		//New keys just as option 1, except paths, no seeds file creation.
-		
-		//Overwrites "512_keys" with new keys.
-		//The following verbatim from rolling-code.cpp, except user knobs, cout, renamed "RC_seeds", renamed "Code", extraction, out_stream, comments, absurd, mkdir.
-		//Generates randomness.
-		{	long long code_length_in_thousands = 512;
-			bool Unix_time_supplement = true; //Set to true for codes of unique randomness, even with the same seeds file. DEFAULT = true.
-			char garbage_byte_for_seeds_file;
-			long long temp_overflow_for_randomness;
+		//Same as option 1.
+		{	//Loads seeds.
+			char seeds[50001] = {'\0'}; cout << "Wait ~10 minutes...\n";
+			long long size = filesystem::file_size(path_to_private_seeds); if(size != digit_length) {cout << "\nBad private_seeds.\n"; return 1;} //Checks file size.
+			in_stream.open(path_to_private_seeds); for(int a = 0; a < digit_length; a++) {in_stream.get(seeds[a]);} in_stream.close();            //Loads value.
+			if(seeds[0] == '0') {seeds[0] = '5';}                                                                                                 //Forces its length.
+			mpz_t in, out; mpz_init(in); mpz_init(out); mpz_set_str(in, seeds, 10); mpz_nextprime(out, in); mpz_get_str(seeds, 10, out);          //Makes it prime.
+			mpz_t prime, two; mpz_init(prime); mpz_init(two); mpz_set_str(prime, seeds, 10); mpz_set_ui(two, 2);                                  //Dedicates.
 			
-			//..........Loads seeds[] with seeds file.
-			in_stream.open(path_to_AS_seeds);
-			unsigned int seeds[1000];
-			for(int a = 0; a < 1000; a++)
-			{	in_stream.get(garbage_byte_for_seeds_file);
-				int normal_byte = garbage_byte_for_seeds_file;
-				if(normal_byte < 0) {normal_byte += 256;}
-				seeds[a] = normal_byte;
-				
-				seeds[a] -= 48;
-				if((in_stream.eof() == true) || (seeds[a] > 9))
-				{	for(int b = 0; b < 1000; b++) {seeds[b] = 0; seeds[b] = 4294967295;} //..........Overwrites RAM of array unsigned int seeds[1000].
-					cout << "\n\nBad seeds file.\n\n"; in_stream.close(); return 0;
+			//Generates 512 keys (randomness). Each key is a prime of length digit_length.
+			out_stream.open(path_to_keys);
+			for(int a = 0; a < 512; a++)
+			{	//Generates randomness (by concatenating consecutive prime gaps).
+				string key; unsigned long long wanted_length = digit_length;
+				for(long long gap = 2; key.length() < wanted_length;)
+				{	mpz_add(prime, prime, two);
+					int primality = mpz_probab_prime_p(prime, 25);
+					if(primality == false) {gap += 2;}
+					else {key += to_string(gap); gap = 2;}
 				}
+				key.resize(digit_length);
+				char tmp[50001] = {'\0'}; strcpy(tmp, key.c_str()); mpz_set_str(in, tmp, 10); mpz_nextprime(out, in); mpz_get_str(tmp, 10, out); key = tmp; //Makes it prime.
+				out_stream << key << "\n";
+			}
+			out_stream.close();
+			
+			//Updates seeds file.
+			out_stream.open(path_to_private_seeds);
+			for(long long gap = 2, a = 0; a < digit_length;)
+			{	mpz_add(prime, prime, two);
+				int primality = mpz_probab_prime_p(prime, 25);
+				if(primality == false) {gap += 2;}
+				else {mpz_get_str(seeds, 10, prime); out_stream << seeds[digit_length - 2]; gap = 2; a++;}
+			}
+			out_stream.close();
+			
+			//Generates ciphertext.
+			//(Generates 512 encrypted items using the 512 keys. Each item is prime gaps following a key).
+			in_stream.open(path_to_keys);
+			out_stream.open(path_to_ciphertext);
+			for(int a = 0; a < 512; a++)
+			{	char key[50001] = {'\0'}; string line; getline(in_stream, line); strcpy(key, line.c_str());
+				mpz_set_str(prime, key, 10);
+				
+				//Generates randomness (by concatenating consecutive prime gaps).
+				string ciphertext; unsigned long long wanted_length = digit_length;
+				for(long long gap = 2; ciphertext.length() < wanted_length;)
+				{	mpz_add(prime, prime, two);
+					int primality = mpz_probab_prime_p(prime, 25);
+					if(primality == false) {gap += 2;}
+					else {ciphertext += to_string(gap); gap = 2;}
+				}
+				ciphertext.resize(digit_length); out_stream << ciphertext;
 			}
 			in_stream.close();
-			
-			//..........Makes 100 10-digit actual seeds based on seeds[]. (Strings together 10 contiguous digits, 100 times.)
-			unsigned int actual_seeds[100] = {0};
-			int seeds_read_bookmark = 0;
-			for(int a = 0; a < 100; a++)
-			{	temp_overflow_for_randomness = 0;
-				for(int b = 0; b < 10; b++)
-				{	temp_overflow_for_randomness += seeds[seeds_read_bookmark];
-					if(b < 9) {temp_overflow_for_randomness *= 10;}
-					seeds_read_bookmark++;
-				}
-				
-				actual_seeds[a] = (temp_overflow_for_randomness % 4294967296);
-			}
-			
-			//..........Supplements all actual_seeds[] with randomness based on Unix time.
-			if(Unix_time_supplement == true)
-			{	srand(time(0));
-				for(int a = 0; a < 100; a++)
-				{	temp_overflow_for_randomness = (rand() % 4294967296);
-					temp_overflow_for_randomness += actual_seeds[a];
-					actual_seeds[a] = (temp_overflow_for_randomness % 4294967296);
-				}
-			}
-			
-			//..........Generator house.
-			out_stream.open(path_to_keys);
-			unsigned int randomness[1000] = {0};
-			for(long long a = 0; a < code_length_in_thousands; a++)
-			{	
-				//..........Generator powerhouse.
-				for(int b = 0; b < 100; b++)
-				{	srand(actual_seeds[b]);
-					for(int c = 0; c < 1000; c++) {randomness[c] += rand(); randomness[c] %= 256;} //..........Fills randomness[] (100x per 1,000-char code.)
-					temp_overflow_for_randomness = (actual_seeds[99 - b] + rand()); //..........Modifies inverse actual_seeds[].
-					actual_seeds[99 - b] = (temp_overflow_for_randomness % 4294967296);
-					
-					srand(actual_seeds[99 - b]);  //..........Now using that inverse seed.
-					for(int c = 0; c < 1000; c++) //..........Swaps EACH & EVERY element in randomness[] with randomly chosen (100,000x per 1,000-char code.)
-					{	int random_element = (rand() % 1000);
-						for(; random_element == c;) {random_element = (rand() % 1000);}
-						
-						unsigned int temp_element = randomness[random_element];
-						randomness[random_element] = randomness[c];
-						randomness[c] = temp_element;
-					}
-					temp_overflow_for_randomness = (actual_seeds[b] + rand()); //..........Modifies current actual_seeds[].
-					actual_seeds[b] = (temp_overflow_for_randomness % 4294967296);
-				}
-				
-				//..........Makes 100 10-digit new actual seeds based on randomness[]. (!!! Adds to current actual_seeds. !!! The generated Code is NOT alone responsible for new actual_seeds. !!!) (Strings together 10 contiguous digits, 100 times.)
-				int randomness_read_bookmark = 0;
-				for(int b = 0; b < 100; b++)
-				{	temp_overflow_for_randomness = 0;
-					for(int c = 0; c < 10; c++)
-					{	temp_overflow_for_randomness += (randomness[randomness_read_bookmark] % 10);
-						if(c < 9) {temp_overflow_for_randomness *= 10;}
-						randomness_read_bookmark++;
-					}
-					
-					temp_overflow_for_randomness += actual_seeds[b];
-					actual_seeds[b] = (temp_overflow_for_randomness % 4294967296);
-				}
-				
-				for(int b = 0; b < 1000; b++) {out_stream << char((randomness[b] % 10) + 48);}
-			}
 			out_stream.close();
 			
-			//..........Overwrites seeds file.
-			out_stream.open(path_to_AS_seeds);
-			for(int a = 0; a < 100; a++)
-			{	unsigned int place = 10;
-				for(int b = 0; b < 9; b++)
-				{	if(actual_seeds[a] < place) {out_stream << "0";}
-					place *= 10;
-				}
-				out_stream << actual_seeds[a];
-			}
-			out_stream << "\n\nSeeds are always rolling and supplemented with Unix time.\n";
-			out_stream.close();
+			//Creates the number file (takes a sha512sum hash of the 512 ciphertext).
+			string input; in_stream.open(path_to_ciphertext); getline(in_stream, input); in_stream.close();
+			unsigned char hash[64]; EVP_Q_digest(nullptr, "SHA512", nullptr, input.c_str(), input.length(), hash, nullptr);
+			string sha512sum; char symbols[] = "0123456789abcdef"; for(int a = 0; a < 64; a++) {sha512sum += symbols[hash[a] >> 4]; sha512sum += symbols[hash[a] & 0xf];}
 			
-			//..........Overwrites RAM of variable long long temp_overflow_for_randomness.
-			temp_overflow_for_randomness = 0; temp_overflow_for_randomness = -9223372036854775807; temp_overflow_for_randomness = 9223372036854775807;
-			
-			//..........Overwrites RAM of arrays unsigned int seeds[1000] and unsigned int randomness[1000].
-			for(int a = 0; a < 1000; a++) {seeds[a] = 0; seeds[a] = 4294967295; randomness[a] = 0; randomness[a] = 4294967295;}
-			
-			//..........Overwrites RAM of array unsigned int actual_seeds[100].
-			for(int a = 0; a < 100; a++) {actual_seeds[a] = 0; actual_seeds[a] = 4294967295;}
+			out_stream.open(path_to_number); out_stream << sha512sum; out_stream.close();
 		}
-		
-		//New ciphertext just as option 1, except paths.
-		
-		//Overwrites "512_ciphertext" with new ciphertext. - From those 512 keys made above.
-		//The following is components from rolling-code.cpp.
-		in_stream.open (path_to_keys      );
-		out_stream.open(path_to_ciphertext);
-		for(int loop = 0; loop < 512; loop++)
-		{	long long temp_overflow_for_randomness;
-			char garbage_byte_for_seeds_file;
-			
-			//..........Loads seeds[] with 1 key at-a-time.
-			unsigned int seeds[1000];
-			for(int a = 0; a < 1000; a++)
-			{	in_stream.get(garbage_byte_for_seeds_file);
-				int normal_byte = garbage_byte_for_seeds_file;
-				if(normal_byte < 0) {normal_byte += 256;}
-				seeds[a] = normal_byte;
-				
-				seeds[a] -= 48;
-				if((in_stream.eof() == true) || (seeds[a] > 9))
-				{	for(int b = 0; b < 1000; b++) {seeds[b] = 0; seeds[b] = 4294967295;} //..........Overwrites RAM of array unsigned int seeds[1000].
-					cout << "\n\nBad keys.\n\n"; in_stream.close(); out_stream.close(); return 0;
-				}
-			}
-			
-			//..........Makes 100 10-digit actual seeds based on seeds[]. (Strings together 10 contiguous digits, 100 times.)
-			unsigned int actual_seeds[100] = {0};
-			int seeds_read_bookmark = 0;
-			for(int a = 0; a < 100; a++)
-			{	temp_overflow_for_randomness = 0;
-				for(int b = 0; b < 10; b++)
-				{	temp_overflow_for_randomness += seeds[seeds_read_bookmark];
-					if(b < 9) {temp_overflow_for_randomness *= 10;}
-					seeds_read_bookmark++;
-				}
-				
-				actual_seeds[a] = (temp_overflow_for_randomness % 4294967296);
-			}
-			
-			//..........Generator powerhouse.
-			unsigned int randomness[1000] = {0};
-			for(int b = 0; b < 100; b++)
-			{	srand(actual_seeds[b]);
-				for(int c = 0; c < 1000; c++) {randomness[c] += rand(); randomness[c] %= 256;} //..........Fills randomness[] (100x per 1,000-char code.)
-				temp_overflow_for_randomness = (actual_seeds[99 - b] + rand()); //..........Modifies inverse actual_seeds[].
-				actual_seeds[99 - b] = (temp_overflow_for_randomness % 4294967296);
-				
-				srand(actual_seeds[99 - b]);  //..........Now using that inverse seed.
-				for(int c = 0; c < 1000; c++) //..........Swaps EACH & EVERY element in randomness[] with randomly chosen (100,000x per 1,000-char code.)
-				{	int random_element = (rand() % 1000);
-					for(; random_element == c;) {random_element = (rand() % 1000);}
-					
-					unsigned int temp_element = randomness[random_element];
-					randomness[random_element] = randomness[c];
-					randomness[c] = temp_element;
-				}
-				temp_overflow_for_randomness = (actual_seeds[b] + rand()); //..........Modifies current actual_seeds[].
-				actual_seeds[b] = (temp_overflow_for_randomness % 4294967296);
-			}
-			
-			for(int b = 0; b < 1000; b++) {out_stream << char((randomness[b] % 94) + 33);}
-			
-			if(loop == 511)
-			{	//..........Overwrites RAM of variable long long temp_overflow_for_randomness.
-				temp_overflow_for_randomness = 0; temp_overflow_for_randomness = -9223372036854775807; temp_overflow_for_randomness = 9223372036854775807;
-				
-				//..........Overwrites RAM of arrays unsigned int seeds[1000] and unsigned int randomness[1000].
-				for(int a = 0; a < 1000; a++) {seeds[a] = 0; seeds[a] = 4294967295; randomness[a] = 0; randomness[a] = 4294967295;}
-				
-				//..........Overwrites RAM of array unsigned int actual_seeds[100].
-				for(int a = 0; a < 100; a++) {actual_seeds[a] = 0; actual_seeds[a] = 4294967295;}
-			}
-		}
-		in_stream.close();
-		out_stream.close();
-		
-		//Takes the sha512sum hash of file "ciphertext".
-		char sha512sum       [10000] = {"echo -n \"$(sha512sum "    }; //..........Ends up to be like:   echo -n "$(sha512sum /home/nikolay/Desktop/Personal/private/512_ciphertext | cut -d ' ' -f 1)" > /home/nikolay/Desktop/Personal/number
-		char sha512sum_middle[10000] = {" | cut -d \' \' -f 1)\" > "};
-		int  sha512sum_write_bookmark = 21;
-		for(int a = 0; path_to_ciphertext[a] != '\0'; a++) {sha512sum[sha512sum_write_bookmark] = path_to_ciphertext[a]; sha512sum_write_bookmark++;}
-		for(int a = 0; sha512sum_middle  [a] != '\0'; a++) {sha512sum[sha512sum_write_bookmark] = sha512sum_middle  [a]; sha512sum_write_bookmark++;}
-		for(int a = 0; path_to_number    [a] != '\0'; a++) {sha512sum[sha512sum_write_bookmark] = path_to_number    [a]; sha512sum_write_bookmark++;}
-		system(sha512sum);
 		
 		//Writes user message to new file "representing_sha512sum_of".
 		out_stream.open(path_to_representing_sha512sum_of);
-		if(existence_of_message == true) {for(int a = 0; message[a] != '\0'; a++) {out_stream << message[a];}}
+		if(existence_of_message == true) {out_stream << message;}
 		out_stream << "\n";
 		out_stream.close();
 		
 		//Appends new number to file "representing_sha512sum_of".
 		in_stream.open(path_to_number);
 		out_stream.open(path_to_representing_sha512sum_of, ios::app);
-		for(int a = 0; a < 128; a++) {in_stream.get(garbage_byte); out_stream.put(garbage_byte);}
-		out_stream << "\n0";
+		getline(in_stream, line); out_stream << line << "\n0";
 		in_stream.close();
 		out_stream.close();
 		
-		//Keeps appending 0s to file "representing_sha512sum_of" until its sha512sum hash is composed of 256 1 bits and 256 0 bits. (16 tries on average.)
-		char sha512sum_bit_distributed[10000] = {"echo -n \"$(sha512sum "};
-		int  sha512sum_bit_distributed_write_bookmark = 21;
-		for(int a = 0; path_to_representing_sha512sum_of[a] != '\0'; a++) {sha512sum_bit_distributed[sha512sum_bit_distributed_write_bookmark] = path_to_representing_sha512sum_of[a]; sha512sum_bit_distributed_write_bookmark++;}
-		for(int a = 0; sha512sum_middle                 [a] != '\0'; a++) {sha512sum_bit_distributed[sha512sum_bit_distributed_write_bookmark] = sha512sum_middle                 [a]; sha512sum_bit_distributed_write_bookmark++;}
-		for(int a = 0; path_to_the_sha512sum            [a] != '\0'; a++) {sha512sum_bit_distributed[sha512sum_bit_distributed_write_bookmark] = path_to_the_sha512sum            [a]; sha512sum_bit_distributed_write_bookmark++;}
-		
-		for(int a = 0; a < 5000; a++)
-		{	system(sha512sum_bit_distributed);
-			int zeros_counter = 0;
+		//Keeps appending 0s to file "representing_sha512sum_of" until its sha512sum hash is composed of 256 1 bits and 256 0 bits.
+		for(int a = 0; a < 100000; a++)
+		{	//Takes a hash.
+			string input;
+			in_stream.open(path_to_representing_sha512sum_of);
+			getline(in_stream, line); input += line; input += '\n';
+			getline(in_stream, line); input += line; input += '\n';
+			getline(in_stream, line); input += line;
+			in_stream.close();
 			
+			unsigned char hash[64]; EVP_Q_digest(nullptr, "SHA512", nullptr, input.c_str(), input.length(), hash, nullptr);
+			string sha512sum; char symbols[] = "0123456789abcdef"; for(int a = 0; a < 64; a++) {sha512sum += symbols[hash[a] >> 4]; sha512sum += symbols[hash[a] & 0xf];}
+			
+			out_stream.open(path_to_the_sha512sum); out_stream << sha512sum; out_stream.close();
+			
+			//Checks if hash is evenly bit-distributed.
 			in_stream.open(path_to_the_sha512sum);
-			for(int b = 0; b < 128; b++)
-			{	in_stream.get(garbage_byte);
-				if     (garbage_byte == '0') {zeros_counter += 4;} //..........hex 0 consists of 4 0 bits, and so on.
-				else if(garbage_byte == '1') {zeros_counter += 3;}
-				else if(garbage_byte == '2') {zeros_counter += 3;}
-				else if(garbage_byte == '3') {zeros_counter += 2;}
-				
-				else if(garbage_byte == '4') {zeros_counter += 3;}
-				else if(garbage_byte == '5') {zeros_counter += 2;}
-				else if(garbage_byte == '6') {zeros_counter += 2;}
-				else if(garbage_byte == '7') {zeros_counter += 1;}
-				
-				else if(garbage_byte == '8') {zeros_counter += 3;}
-				else if(garbage_byte == '9') {zeros_counter += 2;}
-				else if(garbage_byte == 'a') {zeros_counter += 2;}
-				else if(garbage_byte == 'b') {zeros_counter += 1;}
-				
-				else if(garbage_byte == 'c') {zeros_counter += 2;}
-				else if(garbage_byte == 'd') {zeros_counter += 1;}
-				else if(garbage_byte == 'e') {zeros_counter += 1;}
-				else if(garbage_byte == 'f') {zeros_counter += 0;}
-				else                         {cout << "\n\nError_d1\n\n"; in_stream.close(); return 0;}
+			int zeros_counter = 0;
+			in_stream.get(file_byte);
+			for(; !in_stream.eof(); in_stream.get(file_byte))
+			{	if     (file_byte == '0') {zeros_counter += 4;} //hex 0 consists of 4 "0" bits, and so on.
+				else if(file_byte == '1') {zeros_counter += 3;}
+				else if(file_byte == '2') {zeros_counter += 3;}
+				else if(file_byte == '3') {zeros_counter += 2;}
+				else if(file_byte == '4') {zeros_counter += 3;}
+				else if(file_byte == '5') {zeros_counter += 2;}
+				else if(file_byte == '6') {zeros_counter += 2;}
+				else if(file_byte == '7') {zeros_counter += 1;}
+				else if(file_byte == '8') {zeros_counter += 3;}
+				else if(file_byte == '9') {zeros_counter += 2;}
+				else if(file_byte == 'a') {zeros_counter += 2;}
+				else if(file_byte == 'b') {zeros_counter += 1;}
+				else if(file_byte == 'c') {zeros_counter += 2;}
+				else if(file_byte == 'd') {zeros_counter += 1;}
+				else if(file_byte == 'e') {zeros_counter += 1;}
+				else if(file_byte == 'f') {zeros_counter += 0;}
+				else                      {cout << "\n\nError_d1\n\n"; in_stream.close(); return 0;}
 			}
 			in_stream.close();
 			
@@ -761,439 +286,189 @@ int main()
 			out_stream << "0";
 			out_stream.close();
 			
-			if(a == 4999) {cout << "\nError_d2\n"; return 0;}
+			if(a == 99999) {cout << "\nError_d2\n"; return 0;}
 		}
 		
-		out_stream.open(path_to_the_sha512sum, ios::app);
-		out_stream << "\n\nThis hash is composed of 256 0 bits and 256 1 bits."
-		           << "\nIt's a hash of file \"representing_sha512sum_of\""
-		           << "\nwhich contains your message and new number."
-		           << "\n"
-		           << "\nIt is what will be represented by the presence and"
-		           << "\nabsence of keys to your previous ciphertext list.\n";
-		out_stream.close();
-		
-		//Appends only 256 old keys to file "public" (based on bits from hash in file "the_sha512sum".)
-		bool b[512];
-		int i = 0;
+		//Appends only 256 old keys to file "public" (based on bits from hash in file "the_sha512sum").
+		string bin;
 		in_stream.open(path_to_the_sha512sum);
-		for(int a = 0; a < 128; a++)
-		{	in_stream.get(garbage_byte); //      |             |             |             |
-			if     (garbage_byte == '0') {b[i] = 0; b[i + 1] = 0; b[i + 2] = 0; b[i + 3] = 0;}
-			else if(garbage_byte == '1') {b[i] = 0; b[i + 1] = 0; b[i + 2] = 0; b[i + 3] = 1;}
-			else if(garbage_byte == '2') {b[i] = 0; b[i + 1] = 0; b[i + 2] = 1; b[i + 3] = 0;}
-			else if(garbage_byte == '3') {b[i] = 0; b[i + 1] = 0; b[i + 2] = 1; b[i + 3] = 1;}
-			//                                   |             |             |             |
-			else if(garbage_byte == '4') {b[i] = 0; b[i + 1] = 1; b[i + 2] = 0; b[i + 3] = 0;}
-			else if(garbage_byte == '5') {b[i] = 0; b[i + 1] = 1; b[i + 2] = 0; b[i + 3] = 1;}
-			else if(garbage_byte == '6') {b[i] = 0; b[i + 1] = 1; b[i + 2] = 1; b[i + 3] = 0;}
-			else if(garbage_byte == '7') {b[i] = 0; b[i + 1] = 1; b[i + 2] = 1; b[i + 3] = 1;}
-			//                                   |             |             |             |
-			else if(garbage_byte == '8') {b[i] = 1; b[i + 1] = 0; b[i + 2] = 0; b[i + 3] = 0;}
-			else if(garbage_byte == '9') {b[i] = 1; b[i + 1] = 0; b[i + 2] = 0; b[i + 3] = 1;}
-			else if(garbage_byte == 'a') {b[i] = 1; b[i + 1] = 0; b[i + 2] = 1; b[i + 3] = 0;}
-			else if(garbage_byte == 'b') {b[i] = 1; b[i + 1] = 0; b[i + 2] = 1; b[i + 3] = 1;}
-			//                                   |             |             |             |
-			else if(garbage_byte == 'c') {b[i] = 1; b[i + 1] = 1; b[i + 2] = 0; b[i + 3] = 0;}
-			else if(garbage_byte == 'd') {b[i] = 1; b[i + 1] = 1; b[i + 2] = 0; b[i + 3] = 1;}
-			else if(garbage_byte == 'e') {b[i] = 1; b[i + 1] = 1; b[i + 2] = 1; b[i + 3] = 0;}
-			else if(garbage_byte == 'f') {b[i] = 1; b[i + 1] = 1; b[i + 2] = 1; b[i + 3] = 1;}
-			//                                   |             |             |             |
-			
+		in_stream.get(file_byte);
+		for(; !in_stream.eof(); in_stream.get(file_byte))
+		{	if     (file_byte == '0') {bin += "0000";}
+			else if(file_byte == '1') {bin += "0001";}
+			else if(file_byte == '2') {bin += "0010";}
+			else if(file_byte == '3') {bin += "0011";}
+			else if(file_byte == '4') {bin += "0100";}
+			else if(file_byte == '5') {bin += "0101";}
+			else if(file_byte == '6') {bin += "0110";}
+			else if(file_byte == '7') {bin += "0111";}
+			else if(file_byte == '8') {bin += "1000";}
+			else if(file_byte == '9') {bin += "1001";}
+			else if(file_byte == 'a') {bin += "1010";}
+			else if(file_byte == 'b') {bin += "1011";}
+			else if(file_byte == 'c') {bin += "1100";}
+			else if(file_byte == 'd') {bin += "1101";}
+			else if(file_byte == 'e') {bin += "1110";}
+			else if(file_byte == 'f') {bin += "1111";}
 			else {cout << "\n\nError_d3\n\n"; in_stream.close(); return 0;}
-			
-			i += 4;
 		}
 		in_stream.close();
 		
 		out_stream.open(path_to_public, ios::app);
-		out_stream << "\n";
 		int old_keys_read_bookmark = 0;
 		for(int a = 0; a < 512; a++)
-		{	if(b[a] == 1)
-			{	for(int present = 0; present < 1000; present++) {out_stream << old_keys[old_keys_read_bookmark]; old_keys_read_bookmark++;}
+		{	if(bin[a] == '1')
+			{	for(int b = 0; b < digit_length; b++) {out_stream << old_keys[old_keys_read_bookmark]; old_keys_read_bookmark++;}
 			}
-			else {old_keys_read_bookmark += 1000;}
+			else {old_keys_read_bookmark += digit_length;}
 		}
+		out_stream << "\n";
 		out_stream.close();
 		
 		//Appends presence & absence indication to file "public".
 		out_stream.open(path_to_public, ios::app);
-		out_stream << "\n";
-		for(int a = 0; a < 512; a++) {out_stream << b[a];}
+		out_stream << bin << "\n";
 		out_stream.close();
 		
-		//Appends user message and new number to file "public" (all from file "representing_sha512sum_of".)
+		//Appends user message and new number to file "public" (all from file "representing_sha512sum_of").
 		in_stream.open(path_to_representing_sha512sum_of);
 		out_stream.open(path_to_public, ios::app);
-		out_stream << "\n";
-		in_stream.get(garbage_byte);
-		for(; in_stream.eof() == false;) {out_stream.put(garbage_byte); in_stream.get(garbage_byte);}
+		in_stream.get(file_byte);
+		for(; !in_stream.eof(); in_stream.get(file_byte)) {out_stream.put(file_byte);}
 		in_stream.close();
 		out_stream.close();
 		
-		//Overwrites RAM of array char old_keys[512000].    //Binary: 00000000, 111111111.
-		for(int a = 0; a < 512000; a++) {old_keys[a] = '\0'; old_keys[a] = -1;}
-		
-		if(existence_of_message == true) {cout << "\n";}
-		cout << "\nModified. Publish file \"public\""
-		     << "\nso they can update your number.\n\n\n";
+		cout << "\nModified!"
+		     << "\nPublish the \"public\" file so they can update your number.\n";
 	}
-	
-	
-	
-	
 	
 	//_______________________________________________________Verify___________________________________________________//
 	if(user_option == 3)
-	{	
-		/* SUMMARY
-		-------------
-		* Takes hash of ciphertext in file "public" and compares it to the number. Fails & exits on mismatch.
-		* Loads the 512 ciphertext to RAM.
-		* Loads the 256 keys to RAM.
-		* Loads the 512 presence & absence indication to RAM.
-		* Writes user message & number to file.
-		* Takes sha512sum of user message & number file.
-		* Decrypts ciphertext to which keys are present. Fails & exits if bad keys.
-		* Compares this presence & absence to the bits of the hash of "user message & number file". Fails & exits on mismatch.
-		* If compares, saves message from "user message & number file".
-		* If compares, overwrites file "number" with the number in "user message & number file". */
+	{	//Gets path, fixes it if dropped.
+		cout << "Drop/enter their disposable public file:\n"; string path; getline(cin, path); if(path[0] == '\0') {getline(cin, path);}
+		if(path[0] == '\'') {path.erase(0, 1); path.pop_back(); path.pop_back();}
+		in_stream.open(path); if(in_stream.fail()) {cout << "\nNo path " << path << "\n"; return 1;} in_stream.close();
 		
-		//Gets path to file "public".
-		//..........Gets path then fixes it if drag-n-dropped, regardless of single-quote presence and "enter"
-		//..........not being cleared, meaning you can have options before this, where the user presses enter.
-		cout << "Drop/enter their disposable public file:\n";
-		char path_to_public[10000] = {'\0'};
-		{	for(int a = 0; a < 10000; a++) {path_to_public[a] = '\0';}
-			cin.getline(path_to_public, 10000);
-			if(path_to_public[0] == '\0')
-			{	for(int a = 0; a < 10000; a++) {path_to_public[a] = '\0';}
-				cin.getline(path_to_public, 10000);
-			}
-			if(path_to_public[0] == '\0') {cout << "\nNo path given.\n"; return 0;}
-			
-			//..........Removes last space in path_to_public[].
-			bool existence_of_last_space = false;
-			for(int a = 9999; a > 0; a--)
-			{	if(path_to_public[a] != '\0')
-				{	if(path_to_public[a] == ' ') {path_to_public[a] = '\0'; existence_of_last_space = true;}
-					break;
-				}
-			}
-			
-			//..........Removes encapsulating single-quotes in path_to_public[].
-			bool existence_of_encapsulating_single_quotes = false;
-			if(path_to_public[0] == '\'')
-			{	for(int a = 0; a < 9999; a++)
-				{	path_to_public[a] = path_to_public[a + 1];
-					if(path_to_public[a] == '\0') 
-					{	if(path_to_public[a - 1] != '\'') {cout << "\nBad path.\n"; return 0;}
-						path_to_public[a - 1] = '\0';
-						existence_of_encapsulating_single_quotes = true;
-						break;
-					}
-				}
-			}
-			
-			//..........Replaces all "'\''" with "'" in path_to_public[].
-			int single_quote_quantity = 0;
-			for(int a = 0; a < 10000; a++)
-			{	if(path_to_public[a] == '\'') {single_quote_quantity++;}
-			}
-			
-			if((single_quote_quantity                     >    0)
-			&& (existence_of_last_space                  == true)
-			&& (existence_of_encapsulating_single_quotes == true))
-			{	if((single_quote_quantity % 3) != 0) {cout << "\nBad path.\n"; return 0;}
-				
-				for(int a = 0; a < 9997; a++)
-				{	if(path_to_public[a] == '\'')
-					{	int temp = (a + 1);
-						for(; temp < 9997; temp++)
-						{	path_to_public[temp] = path_to_public[temp + 3];
-						}
-					}
-				}
-			}
-			
-			in_stream.open(path_to_public);
-			if(in_stream.fail() == true) {cout << "\nNo such file or directory.\n"; in_stream.close(); return 0;}
-			in_stream.close();
-		}
+		string path_to_public = path;
 		
-		//Gets path to file "number".
-		//..........Gets path then fixes it if drag-n-dropped, regardless of single-quote presence and "enter"
-		//..........not being cleared, meaning you can have options before this, where the user presses enter.
-		cout << "\nDrop/enter their number file to modify:\n";
-		char path_to_number[10000] = {'\0'};
-		{	for(int a = 0; a < 10000; a++) {path_to_number[a] = '\0';}
-			cin.getline(path_to_number, 10000);
-			if(path_to_number[0] == '\0')
-			{	for(int a = 0; a < 10000; a++) {path_to_number[a] = '\0';}
-				cin.getline(path_to_number, 10000);
-			}
-			if(path_to_number[0] == '\0') {cout << "\nNo path given.\n"; return 0;}
-			
-			//..........Removes last space in path_to_number[].
-			bool existence_of_last_space = false;
-			for(int a = 9999; a > 0; a--)
-			{	if(path_to_number[a] != '\0')
-				{	if(path_to_number[a] == ' ') {path_to_number[a] = '\0'; existence_of_last_space = true;}
-					break;
-				}
-			}
-			
-			//..........Removes encapsulating single-quotes in path_to_number[].
-			bool existence_of_encapsulating_single_quotes = false;
-			if(path_to_number[0] == '\'')
-			{	for(int a = 0; a < 9999; a++)
-				{	path_to_number[a] = path_to_number[a + 1];
-					if(path_to_number[a] == '\0') 
-					{	if(path_to_number[a - 1] != '\'') {cout << "\nBad path.\n"; return 0;}
-						path_to_number[a - 1] = '\0';
-						existence_of_encapsulating_single_quotes = true;
-						break;
-					}
-				}
-			}
-			
-			//..........Replaces all "'\''" with "'" in path_to_number[].
-			int single_quote_quantity = 0;
-			for(int a = 0; a < 10000; a++)
-			{	if(path_to_number[a] == '\'') {single_quote_quantity++;}
-			}
-			
-			if((single_quote_quantity                     >    0)
-			&& (existence_of_last_space                  == true)
-			&& (existence_of_encapsulating_single_quotes == true))
-			{	if((single_quote_quantity % 3) != 0) {cout << "\nBad path.\n"; return 0;}
-				
-				for(int a = 0; a < 9997; a++)
-				{	if(path_to_number[a] == '\'')
-					{	int temp = (a + 1);
-						for(; temp < 9997; temp++)
-						{	path_to_number[temp] = path_to_number[temp + 3];
-						}
-					}
-				}
-			}
-			
-			in_stream.open(path_to_number);
-			if(in_stream.fail() == true) {cout << "\nNo such file or directory.\n"; in_stream.close(); return 0;}
-			in_stream.close();
-		}
+		//Gets path, fixes it if dropped.
+		cout << "\nDrop/enter their number file:\n"; getline(cin, path); if(path[0] == '\0') {getline(cin, path);}
+		if(path[0] == '\'') {path.erase(0, 1); path.pop_back(); path.pop_back();}
+		in_stream.open(path); if(in_stream.fail()) {cout << "\nNo path " << path << "\n"; return 1;} in_stream.close();
 		
-		//Takes hash of ciphertext in file "public" and compares it to the number.
-		char ciphertext_hash[10000] = {"head -c 512000 "};
-		int  ciphertext_hash_write_bookmark = 15;
-		for(int a = 0; path_to_public[a] != '\0'; a++)
-		{	ciphertext_hash[ciphertext_hash_write_bookmark] = path_to_public[a];
-			ciphertext_hash_write_bookmark++;
-		}
+		string path_to_number = path;
 		
-		char ciphertext_hash_appendix[100] = {" | sha512sum > temp_sha512sum_Authorship_verification"};
-		for(int a = 0; ciphertext_hash_appendix[a] != '\0'; a++)
-		{	ciphertext_hash[ciphertext_hash_write_bookmark] = ciphertext_hash_appendix[a];
-			ciphertext_hash_write_bookmark++;
-		}
-		
-		system(ciphertext_hash);
-		
-		in_stream.open(path_to_number);
-		char temp_number_for_comparison[128] = {'\0'};
-		for(int a = 0; a < 128; a++) {in_stream.get(temp_number_for_comparison[a]);}
-		in_stream.close();
-		
-		in_stream.open("temp_sha512sum_Authorship_verification");
-		char garbage_byte;
-		for(int a = 0; a < 128; a++)
-		{	in_stream.get(garbage_byte);
-			if(garbage_byte != temp_number_for_comparison[a]) {cout << "\nFAILED! That number is not the ciphertext hash.\n"; in_stream.close(); return 0;}
-		}
-		in_stream.close();
-		
-		remove("temp_sha512sum_Authorship_verification");
-		
+		//Loads file "public" to RAM.
 		in_stream.open(path_to_public);
-		//........
-		//.....
-		//..
-		//.
-		
-		//Loads the 512 ciphertext to RAM.
-		char ciphertext[512000];
-		for(int a = 0; a < 512000; a++) {in_stream.get(ciphertext[a]);}
-		in_stream.get(garbage_byte);
-		
-		//Loads the 256 keys to RAM.
-		char keys[256000];
-		for(int a = 0; a < 256000; a++) {in_stream.get(keys[a]); keys[a] -= 48;}
-		in_stream.get(garbage_byte);
-		
-		//Loads the 512 presence & absence indication to RAM.
-		char presence_absence[512];
-		for(int a = 0; a < 512; a++) {in_stream.get(presence_absence[a]);}
-		in_stream.get(garbage_byte);
-		
-		int zeros_counter = 0;
-		int ones_counter  = 0;
-		for(int a = 0; a < 512; a++)
-		{	if     (presence_absence[a] == '0') {zeros_counter++;}
-			else if(presence_absence[a] == '1') {ones_counter++ ;}
-			else                                {cout << "\nPresence & absence indication must have 256 zeros and 256 ones.\n"; return 0;}
-		}
-		
-		if(zeros_counter != ones_counter) {cout << "\nPresence & absence indication must have 256 zeros and 256 ones.\n"; return 0;}
-		
-		//Writes user message & number to file.
-		out_stream.open("temp_user_message_and_number_Authorship_verification");
-		in_stream.get(garbage_byte);
-		for(; in_stream.eof() != true;) {out_stream.put(garbage_byte); in_stream.get(garbage_byte);}
-		out_stream.close();
-		
-		//.
-		//..
-		//.....
-		//........
+		string ciphertext      ;   getline(in_stream, ciphertext      );
+		string keys            ;   getline(in_stream, keys            );
+		string presence_absence;   getline(in_stream, presence_absence);
+		string message         ;   getline(in_stream, message         );
+		string number          ;   getline(in_stream, number          );
+		string zeros           ;   getline(in_stream, zeros           );
 		in_stream.close();
 		
-		//Takes sha512sum of user message & number file.
-		system("sha512sum temp_user_message_and_number_Authorship_verification > temp_sha512sum_of_user_message_and_number");
+		//Checks for substance.
+		if((ciphertext.length()       != (unsigned long long)(digit_length * 512))
+		|| (keys.length()             != (unsigned long long)(digit_length * 256))
+		|| (presence_absence.length() != (unsigned long long)(               512))
+		|| (number.length()           != (unsigned long long)(               128))
+		|| (zeros[0]                  ==                                     '\0')) {cout << "\nBad \"public\" file.\n"; return 0;}
+		
+		//Checks message.
+		if(message[0] != '\0')
+		{	for(unsigned int a = 0; a < (unsigned long long)message.length(); a++)
+			{	if((message[a] < 32) || (message[a] > 126)) {cout << "\nMessage corrupted.\n"; return 0;}
+			}
+		}
+		
+		//Checks presence_absence.
+		int occur_0 = 0;
+		int occur_1 = 0;
+		for(int a = 0; presence_absence[a] != '\0'; a++)
+		{	if     (presence_absence[a] == '0') {occur_0++;}
+			else if(presence_absence[a] == '1') {occur_1++;}
+		}
+		if((occur_0 != 256) || (occur_1 != 256)) {cout << "\nPresence & absence indication must have 256 zeros and 256 ones.\n"; return 0;}
+		
+		//Takes hash of ciphertext.
+		unsigned char hash[64]; EVP_Q_digest(nullptr, "SHA512", nullptr, ciphertext.c_str(), ciphertext.length(), hash, nullptr);
+		string hash_of_ciphertext; char symbols[] = "0123456789abcdef"; for(int a = 0; a < 64; a++) {hash_of_ciphertext += symbols[hash[a] >> 4]; hash_of_ciphertext += symbols[hash[a] & 0xf];}
+		
+		//Compares hash to the number in the "number" file.
+		string temp_number; in_stream.open(path_to_number); getline(in_stream, temp_number); in_stream.close();
+		if(hash_of_ciphertext != temp_number) {cout << "\nFAILED! That number is not the hash of the ciphertext. Old public file?\n"; in_stream.close(); return 0;}
+		
+		//Takes hash of user message & number.
+		string last_3_lines;
+		last_3_lines += message; last_3_lines += '\n';
+		last_3_lines += number ; last_3_lines += '\n';
+		last_3_lines += zeros  ;
+		
+		EVP_Q_digest(nullptr, "SHA512", nullptr, last_3_lines.c_str(), last_3_lines.length(), hash, nullptr);
+		string hash_of_last_3_lines; for(int a = 0; a < 64; a++) {hash_of_last_3_lines += symbols[hash[a] >> 4]; hash_of_last_3_lines += symbols[hash[a] & 0xf];}
 		
 		//Decrypts ciphertext to which keys are present.
 		int ciphertext_read_bookmark = 0;
 		int keys_read_bookmark       = 0;
 		for(int a = 0; a < 512; a++)
 		{	if(presence_absence[a] == '1')
-			{	long long temp_overflow_for_randomness;
+			{	mpz_t prime, two; mpz_init(prime); mpz_init(two); mpz_set_ui(two, 2);
+				char key[50001] = {'\0'}; for(int b = 0; b < digit_length; b++) {key[b] = keys[keys_read_bookmark]; keys_read_bookmark++;}
+				mpz_set_str(prime, key, 10);
 				
-				//..........Makes 100 10-digit actual seeds based on keys[]. (Strings together 10 contiguous digits, 100 times.)
-				unsigned int actual_seeds[100] = {0};
-				for(int b = 0; b < 100; b++)
-				{	temp_overflow_for_randomness = 0;
-					for(int b = 0; b < 10; b++)
-					{	temp_overflow_for_randomness += keys[keys_read_bookmark];
-						if(b < 9) {temp_overflow_for_randomness *= 10;}
-						keys_read_bookmark++;
-					}
-					
-					actual_seeds[b] = (temp_overflow_for_randomness % 4294967296);
+				//Generates randomness (by concatenating consecutive prime gaps).
+				string recreated_ciphertext; unsigned long long wanted_length = digit_length;
+				for(long long gap = 2; recreated_ciphertext.length() < wanted_length;)
+				{	mpz_add(prime, prime, two);
+					int primality = mpz_probab_prime_p(prime, 25);
+					if(primality == false) {gap += 2;}
+					else {recreated_ciphertext += to_string(gap); gap = 2;}
 				}
+				recreated_ciphertext.resize(digit_length);
 				
-				//..........Generator powerhouse.
-				unsigned int randomness[1000] = {0};
-				for(int b = 0; b < 100; b++)
-				{	srand(actual_seeds[b]);
-					for(int c = 0; c < 1000; c++) {randomness[c] += rand(); randomness[c] %= 256;} //..........Fills randomness[] (100x per 1,000-char code.)
-					temp_overflow_for_randomness = (actual_seeds[99 - b] + rand()); //..........Modifies inverse actual_seeds[].
-					actual_seeds[99 - b] = (temp_overflow_for_randomness % 4294967296);
-					
-					srand(actual_seeds[99 - b]);  //..........Now using that inverse seed.
-					for(int c = 0; c < 1000; c++) //..........Swaps EACH & EVERY element in randomness[] with randomly chosen (100,000x per 1,000-char code.)
-					{	int random_element = (rand() % 1000);
-						for(; random_element == c;) {random_element = (rand() % 1000);}
-						
-						unsigned int temp_element = randomness[random_element];
-						randomness[random_element] = randomness[c];
-						randomness[c] = temp_element;
-					}
-					temp_overflow_for_randomness = (actual_seeds[b] + rand()); //..........Modifies current actual_seeds[].
-					actual_seeds[b] = (temp_overflow_for_randomness % 4294967296);
-				}
-				
-				for(int b = 0; b < 1000; b++)
-				{	if( char((randomness[b] % 94) + 33) != ciphertext[ciphertext_read_bookmark]) {cout << "\nFAILED! Incorrect keys.\n"; return 0;}
+				//Checks it.
+				for(int b = 0; b < digit_length; b++)
+				{	if(recreated_ciphertext[b] != ciphertext[ciphertext_read_bookmark]) {cout << "\nFAILED! Incorrect keys.\n"; return 0;}
 					ciphertext_read_bookmark++;
 				}
 			}
-			else {ciphertext_read_bookmark += 1000;}
+			else {ciphertext_read_bookmark += digit_length;}
 		}
 		
-		//Compares this presence & absence to the bits of the hash of "user message & number file".
-		bool b[512];
-		int i = 0;
-		in_stream.open("temp_sha512sum_of_user_message_and_number");
-		for(int a = 0; a < 128; a++)
-		{	in_stream.get(garbage_byte); //      |             |             |             |
-			if     (garbage_byte == '0') {b[i] = 0; b[i + 1] = 0; b[i + 2] = 0; b[i + 3] = 0;}
-			else if(garbage_byte == '1') {b[i] = 0; b[i + 1] = 0; b[i + 2] = 0; b[i + 3] = 1;}
-			else if(garbage_byte == '2') {b[i] = 0; b[i + 1] = 0; b[i + 2] = 1; b[i + 3] = 0;}
-			else if(garbage_byte == '3') {b[i] = 0; b[i + 1] = 0; b[i + 2] = 1; b[i + 3] = 1;}
-			//                                   |             |             |             |
-			else if(garbage_byte == '4') {b[i] = 0; b[i + 1] = 1; b[i + 2] = 0; b[i + 3] = 0;}
-			else if(garbage_byte == '5') {b[i] = 0; b[i + 1] = 1; b[i + 2] = 0; b[i + 3] = 1;}
-			else if(garbage_byte == '6') {b[i] = 0; b[i + 1] = 1; b[i + 2] = 1; b[i + 3] = 0;}
-			else if(garbage_byte == '7') {b[i] = 0; b[i + 1] = 1; b[i + 2] = 1; b[i + 3] = 1;}
-			//                                   |             |             |             |
-			else if(garbage_byte == '8') {b[i] = 1; b[i + 1] = 0; b[i + 2] = 0; b[i + 3] = 0;}
-			else if(garbage_byte == '9') {b[i] = 1; b[i + 1] = 0; b[i + 2] = 0; b[i + 3] = 1;}
-			else if(garbage_byte == 'a') {b[i] = 1; b[i + 1] = 0; b[i + 2] = 1; b[i + 3] = 0;}
-			else if(garbage_byte == 'b') {b[i] = 1; b[i + 1] = 0; b[i + 2] = 1; b[i + 3] = 1;}
-			//                                   |             |             |             |
-			else if(garbage_byte == 'c') {b[i] = 1; b[i + 1] = 1; b[i + 2] = 0; b[i + 3] = 0;}
-			else if(garbage_byte == 'd') {b[i] = 1; b[i + 1] = 1; b[i + 2] = 0; b[i + 3] = 1;}
-			else if(garbage_byte == 'e') {b[i] = 1; b[i + 1] = 1; b[i + 2] = 1; b[i + 3] = 0;}
-			else if(garbage_byte == 'f') {b[i] = 1; b[i + 1] = 1; b[i + 2] = 1; b[i + 3] = 1;}
-			//                                   |             |             |             |
-			
-			else {cout << "\n\nError_d4\n\n"; in_stream.close(); return 0;}
-			
-			i += 4;
-		}
-		in_stream.close();
-		
-		for(int a = 0; a < 512; a++)
-		{	if(presence_absence[a] != char(b[a] + 48)) {cout << "\nFAILED! Hash of \"message + new number\" does not match key presence & absence.\n"; return 0;}
+		//Compares presence & absence indication to (the bits of) the hash of user message & number.
+		string bin_hash_of_last_3_lines;
+		for(int a = 0; hash_of_last_3_lines[a] != '\0'; a++)
+		{	if     (hash_of_last_3_lines[a] == '0') {bin_hash_of_last_3_lines += "0000";}
+			else if(hash_of_last_3_lines[a] == '1') {bin_hash_of_last_3_lines += "0001";}
+			else if(hash_of_last_3_lines[a] == '2') {bin_hash_of_last_3_lines += "0010";}
+			else if(hash_of_last_3_lines[a] == '3') {bin_hash_of_last_3_lines += "0011";}
+			else if(hash_of_last_3_lines[a] == '4') {bin_hash_of_last_3_lines += "0100";}
+			else if(hash_of_last_3_lines[a] == '5') {bin_hash_of_last_3_lines += "0101";}
+			else if(hash_of_last_3_lines[a] == '6') {bin_hash_of_last_3_lines += "0110";}
+			else if(hash_of_last_3_lines[a] == '7') {bin_hash_of_last_3_lines += "0111";}
+			else if(hash_of_last_3_lines[a] == '8') {bin_hash_of_last_3_lines += "1000";}
+			else if(hash_of_last_3_lines[a] == '9') {bin_hash_of_last_3_lines += "1001";}
+			else if(hash_of_last_3_lines[a] == 'a') {bin_hash_of_last_3_lines += "1010";}
+			else if(hash_of_last_3_lines[a] == 'b') {bin_hash_of_last_3_lines += "1011";}
+			else if(hash_of_last_3_lines[a] == 'c') {bin_hash_of_last_3_lines += "1100";}
+			else if(hash_of_last_3_lines[a] == 'd') {bin_hash_of_last_3_lines += "1101";}
+			else if(hash_of_last_3_lines[a] == 'e') {bin_hash_of_last_3_lines += "1110";}
+			else if(hash_of_last_3_lines[a] == 'f') {bin_hash_of_last_3_lines += "1111";}
+			else                                    {cout << "\n\nError_d4\n\n"; return 0;}
 		}
 		
+		if(presence_absence != bin_hash_of_last_3_lines) {cout << "\nFAILED! Hash of \"message + new number\" does not match key presence & absence.\n"; return 0;}
 		cout << "\nVerified!";
 		
-		in_stream.open("temp_user_message_and_number_Authorship_verification");
-		//........
-		//.....
-		//..
-		//.
+		//Updates file "number" with the new number in file "public".
+		out_stream.open(path_to_number); out_stream << number; out_stream.close();
 		
-		//If compares, saves message from "user message & number file".
-		in_stream.get(garbage_byte);
-		if(garbage_byte != '\n')
-		{	char path_to_message[10000] = {'\0'};
-			for(int a = 0; a < 10000; a++) {path_to_message[a] = path_to_number[a];}
-			
-			int name_bookmark = 0;
-			for(int a = 9999; a > 0; a--)
-			{	if(path_to_message[a] == '/') {name_bookmark = (a + 1); break;}
-			}
-			
-			char temp_name_message[100] = {"message"};
-			for(int a = 0; temp_name_message[a] != '\0'; a++) {path_to_message[name_bookmark] = temp_name_message[a]; name_bookmark++;}
-			path_to_message[name_bookmark] = '\0';
-			
-			out_stream.open(path_to_message, ios::app);
-			for(; garbage_byte != '\n';) {out_stream.put(garbage_byte); in_stream.get(garbage_byte);}
-			out_stream << "\n";
-			out_stream.close();
-			
-			cout << "\nMessage appended.";
+		//Appends message to file "number".
+		if(message[0] != '\0')
+		{	out_stream.open(path_to_number, ios::app); out_stream << "\n\n" << message << "\n"; out_stream.close();
+			cout << "\nThe \"number\" file was updated. And their message was appended to it.\n";
 		}
-		else {cout << "\nNo message.";}
-		
-		//If compares, overwrites file "number" with the number in "user message & number file".
-		out_stream.open(path_to_number);
-		in_stream.get(garbage_byte);
-		for(int a = 0; a < 128; a++) {out_stream.put(garbage_byte); in_stream.get(garbage_byte);}
-		out_stream.close();
-		
-		cout << "\nNumber updated.\n\n\n";
-		
-		//.
-		//..
-		//.....
-		//........
-		in_stream.close();
-		
-		remove("temp_user_message_and_number_Authorship_verification");
-		remove("temp_sha512sum_of_user_message_and_number"           );
+		else {cout << "\nThe \"number\" file was updated. And they left no message.\n";}
 	}
 }
