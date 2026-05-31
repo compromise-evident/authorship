@@ -1,4 +1,5 @@
-Run it: ```apt install g++ geany```. Open the .cpp in Geany. Hit F9 once. F5 to run.
+Run it: ```apt install g++ geany libgmp-dev libssl-dev```. Open the .cpp in Geany.<br>
+Append ```-lgmp -lcrypto``` to Geany's compile & build commands. Hit F9 once. F5 to run.
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/compromise-evident/Authorship/refs/heads/main/Other/Terminal.png">
