@@ -2,6 +2,8 @@ Authorship
 
 
 
+Version 9.0.0   Secure (using modified rolling-code 5.0.1). Remastered.
+
 Version 8.0.1   rolling-code 3.1.1 integrated. RAM garbage no longer supplements
                 randomness due to RAM on Linux zeroing when allocated and freed.
                 Jul 22 2024
