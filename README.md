@@ -140,8 +140,8 @@ Because ```digit_length = 200```,
 * Just once, you must provide any file of 200+ random first bytes. This creates a
   rolling-seeds file containing a 200-digit value, near which prime gaps are
   found, for generating randomness.
-  Continued gaps are then used for the randomness in changing that value,
-  after modifying. You can alter this "private_seeds" file.
+  Continued gaps are then used for the randomness in changing that value.
+  You can alter this "private_seeds" file.
 * A key is a 200-digit prime. Its randomness comes from
   a concatenation of prime gaps near a 200-digit prime.
 * A ciphertext (encrypted item) is 200 digits, and is
