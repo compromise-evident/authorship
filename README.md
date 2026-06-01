@@ -31,10 +31,12 @@ hash of 512 encrypted items. This does not change function.
 A hash is simply friendlier for humans to handle as the number.
 Once the encrypted items are provided, the verifying-party
 can see that it's they're the right items.
-A hash is lossy compression with 3 benefits:
+A hash is the ultimate lossy compression
+except the original file must be provided.
+A hash has 3 benefits:
 * It is statistically difficult to generate an impostor file responsible for that hash.
 * If the original file is provided, you have a great deal of certainty that it is the original.
-* If a successful impostor file is provided, its content is irrelevant, and usually randomness.
+* If an impostor file is provided, its content is irrelevant, and usually useless randomness.
 
 ### The wrong way
 
