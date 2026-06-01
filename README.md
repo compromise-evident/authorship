@@ -2,7 +2,7 @@ Run it: ```apt install g++ geany libgmp-dev libssl-dev```. Open the .cpp in Gean
 Append ```-lgmp -lcrypto``` to Geany's compile & build commands. Hit F9 once. F5 to run.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/compromise-evident/Authorship/refs/heads/main/Other/Terminal.png">
+  <img src="Other/Terminal.png">
 </p>
 
 <br>
@@ -132,7 +132,7 @@ along with the hash of that new list
 *   **And cryptocurrency:**
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/compromise-evident/Authorship/main/Other/Cryptocurrency_81045ad8faed316fba71a14666de0565.png">
+  <img src="Other/Cryptocurrency_81045ad8faed316fba71a14666de0565.png">
 </p>
 
 <br>
