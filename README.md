@@ -30,7 +30,7 @@ mention the fact that actually, your number is a sha512sum
 hash of 512 encrypted items. This does not change function.
 A hash is simply friendlier for humans to handle as the number.
 Once the encrypted items are provided, the verifying-party
-can see that it's they're the right items.
+can see that they're the right items.
 A hash is the ultimate lossy compression
 except the original file must be provided.
 A hash has 3 benefits:
