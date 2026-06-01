@@ -22,7 +22,7 @@ int main()
 	ofstream out_stream;
 	
 	cout << "\n(1) Create   Your number which others save."
-	     << "\n(2) Modify   Your Personal folder renewed makes public file which others verify."
+	     << "\n(2) Modify   Creates a disposable public file with which others verify."
 	     << "\n(3) Verify   Their new public file modifies their number file which you saved."
 	
 	     << "\n\nOption: ";
