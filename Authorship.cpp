@@ -141,13 +141,13 @@ int main()
 		if(message[0] != '\0') {existence_of_message = true;}
 		
 		//Creates paths.
-		string path_to_keys                      = path;   path_to_keys                      += "/private/512_keys"                 ;
-		string path_to_ciphertext                = path;   path_to_ciphertext                += "/private/512_ciphertext"           ;
-		string path_to_private_seeds             = path;   path_to_private_seeds             += "/private/private_seeds"            ;
-		string path_to_public                    = path;   path_to_public                    += "/public"                           ;
-		string path_to_number                    = path;   path_to_number                    += "/number"                           ;
-		string path_to_representing_sha512sum_of = path;   path_to_representing_sha512sum_of += "/private/representing_sha512sum_of";
-		string path_to_the_sha512sum             = path;   path_to_the_sha512sum             += "/private/the_sha512sum"            ;
+		string path_to_keys                      = (path + "/private/512_keys"                 );
+		string path_to_ciphertext                = (path + "/private/512_ciphertext"           );
+		string path_to_private_seeds             = (path + "/private/private_seeds"            );
+		string path_to_public                    = (path + "/public"                           );
+		string path_to_number                    = (path + "/number"                           );
+		string path_to_representing_sha512sum_of = (path + "/private/representing_sha512sum_of");
+		string path_to_the_sha512sum             = (path + "/private/the_sha512sum"            );
 		
 		//Copies ciphertext to new file "public".
 		string line;
