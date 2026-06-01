@@ -24,10 +24,17 @@ items (hence publicly verifiable yet authorized-only.)
 These encrypted items hide no substance of value,
 their purpose is to pose difficulty
 (hence independent of encryption type and symmetry.)
-For brevity and simplicity, the diagram above didn't
+
+For comprehensibility, the diagram above didn't
 mention the fact that actually, your number is a sha512sum
 hash of 512 encrypted items. This does not change function.
-It simply makes it friendlier for humans to handle the number.
+A hash is simply friendlier for humans to handle as the number.
+Once the encrypted items are provided, the verifying-party
+can see that it's they're the right items.
+A hash is lossy compression with 3 benefits:
+* It is statistically difficult to generate an impostor file responsible for that hash.
+* If the original file is provided, you have a great deal of certainty that it is the original.
+* If a successful impostor file is provided, its content is irrelevant, and usually randomness.
 
 ### The wrong way
 
