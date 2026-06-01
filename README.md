@@ -11,7 +11,7 @@ Append ```-lgmp -lcrypto``` to Geany's compile & build commands. Hit F9 once. F5
 # How it works
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/compromise-evident/Authorship/refs/heads/main/Other/How_it_works.png">
+  <img src="Other/How_it_works.png">
 </p>
 
 You can't prove that you created your content, or that
@@ -24,6 +24,10 @@ items (hence publicly verifiable yet authorized-only.)
 These encrypted items hide no substance of value,
 their purpose is to pose difficulty
 (hence independent of encryption type and symmetry.)
+For brevity ans simplicity, the diagram above din't
+mention the fact that actually, your number is a sha512sum
+hash of 512 encrypted items. This does not change function.
+It simply makes it friendlier for humans to handle the number.
 
 ### The wrong way
 
