@@ -11,7 +11,7 @@ Append ```-lgmp -lcrypto``` to Geany's compile & build commands. Hit F9 once. F5
 # How it works
 
 <p align="center">
-  <img src="Other/How_it_works.png">
+  <img src="Other/how_it_works.png">
 </p>
 
 You can't prove that you created your content, or that
