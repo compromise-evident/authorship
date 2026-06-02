@@ -39,7 +39,13 @@ A hash has 3 benefits:
 * If the original file is provided, you have a great deal of certainty that it is the original.
 * If an impostor file is provided, its content is irrelevant, and usually useless randomness.
 
-Essentially, your number is a compressed version of 512 encrypted items (512 ciphertext).
+Essentially, your number is a compressed version of 512 encrypted items,
+making it easy to copy-paste onto social media.
+Considering modern scams and how difficult it's
+becoming to detect impersonation,
+your Authorship number is a simple and accessible
+door to authentication you can later jump from
+to systems with vital features.
 
 ### The wrong way
 
