@@ -45,7 +45,7 @@ Considering modern scams and how difficult it's
 becoming to detect impersonation,
 your Authorship number is a simple and accessible
 door to authentication you can later jump from
-to systems with vital features.
+to other such systems that have vital features.
 
 ### The wrong way
 
