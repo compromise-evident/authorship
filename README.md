@@ -32,7 +32,7 @@ A hash is simply friendlier for humans to handle as the number.
 Once the encrypted items are provided, the verifying-party
 can see that they're the right items.
 A hash is the ultimate lossy compression
-except the original file must be provided.
+except the original (uncompressed) file must come with the hash.
 A hash has 3 benefits:
 * It is statistically difficult to generate an impostor file responsible for that same hash.
 * If the original file is provided, you have a great deal of certainty that it is the original.
