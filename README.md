@@ -37,8 +37,8 @@ A hash has 1 benefit:
 
 * It is statistically difficult to generate an impostor file responsible for that same hash.
 
-That's because even a small change to the original file yields a completely hash,
-thanks to the avalanche effect.
+That's because even a small change to the original file yields a very different hash,
+thanks to the avalanche effect of how a modern hash is generated.
 Essentially, your number is a compressed version of 512 encrypted items,
 making it easy to copy-paste onto social media.
 Considering modern scams and how difficult it's
