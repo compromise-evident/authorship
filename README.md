@@ -31,7 +31,7 @@ hash of 512 encrypted items. This does not change function.
 A hash is simply friendlier for humans to handle as the number.
 Once the encrypted items are provided, the verifying-party
 can see that they're the right items.
-A hash is the ultimate lossy compression
+A hash is the ultimate compression
 except the original (uncompressed) file must come with the hash.
 A hash has 3 benefits:
 
