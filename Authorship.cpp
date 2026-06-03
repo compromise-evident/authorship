@@ -11,9 +11,9 @@ authentication independent of encryption type & symmetry).*/
 #include <cstring>
 #include <filesystem>
 #include <fstream>
-#include <gmp.h>
+#include <gmp.h> //For primes
 #include <iostream>
-#include <openssl/evp.h>
+#include <openssl/evp.h> //For hash
 using namespace std;
 int main()
 {	int raw_byte;
