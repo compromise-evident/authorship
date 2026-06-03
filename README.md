@@ -35,7 +35,7 @@ A hash is the ultimate compression
 except the original (uncompressed) file must come with the hash.
 A hash has 1 benefit:
 
-* It is statistically difficult to generate an impostor file responsible for that same hash.
+* It is statistically difficult to generate an impostor file, or any file, responsible for that same hash.
 
 That's because even a small change to the original file yields a very different hash,
 thanks to the avalanche effect of how a modern hash is generated.
