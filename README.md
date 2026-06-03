@@ -33,12 +33,12 @@ Once the encrypted items are provided, the verifying-party
 can see that they're the right items.
 A hash is the ultimate compression
 except the original (uncompressed) file must come with the hash.
-A hash has 3 benefits:
+A hash has 1 benefit:
 
 * It is statistically difficult to generate an impostor file responsible for that same hash.
-* If the original file is provided, you have a great deal of certainty that it is the original.
-* If an impostor file is provided, its content is irrelevant, and usually useless randomness.
 
+That's because even a small change to the original file yields a completely hash,
+thanks to the avalanche effect.
 Essentially, your number is a compressed version of 512 encrypted items,
 making it easy to copy-paste onto social media.
 Considering modern scams and how difficult it's
