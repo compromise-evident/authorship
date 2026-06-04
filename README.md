@@ -26,21 +26,17 @@ their purpose is to pose difficulty
 (hence independent of encryption type and symmetry.)
 
 For comprehensibility, the diagram above didn't
-mention the fact that actually, your number is a sha512sum
-hash of 512 encrypted items. This does not change function.
-A hash is simply friendlier for humans to handle as the number.
-Once the encrypted items are provided, the verifying-party
-can see that they're the right items.
-A hash is the ultimate compression
-except the original (uncompressed) file must come with the hash.
-A hash has 1 benefit:
-
-* It is statistically difficult to generate an impostor file, or any file, responsible for that same hash.
-
-That's because even a small change to the original file yields a very different hash,
-thanks to the avalanche effect of how a modern hash is generated.
-Essentially, your number is a compressed version of 512 encrypted items,
-making it easy to copy-paste onto social media.
+mention the fact that actually, your number is a SHA-512
+hash of 512 encrypted items, making it easy to
+copy-paste numbers onto social media.
+A hash is an intensely compressed version of a file,
+where the original file must be provided in order to
+reproduce that hash. And it is statistically difficult
+to generate an impostor file, or any file,
+responsible for that same hash.
+That's because even a small change to the original file
+yields a very different hash, thanks to the
+avalanche effect of how a modern hash is generated.
 Considering modern scams and how difficult it's
 becoming to detect impersonation,
 your Authorship number is a simple and accessible
@@ -73,9 +69,9 @@ And now, as I look at your original list of encrypted items,
 I cross out any that I can decrypt, using the keys you released.
 When I take a step back,
 a binary message appears;
-<ins>what's crossed out and left uncrossed
+what's crossed out and left uncrossed
 represents ones and zeros not predetermined;
-this one-time message can be anything you make it whenever you make it, even though it comes from something old and unchangeable.</ins>
+this one-time message can be anything you make it whenever you make it, even though it comes from something old and unchangeable.
 And so you make this message represent personal thoughts for this event,
 along with the hash of that new list
 (so as to build an authorized-only relationship with that new list.)
