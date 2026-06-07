@@ -167,6 +167,7 @@ Because ```digit_length = 200```,
   a concatenation of prime gaps near a key.
 * "Near which private prime, will I find these public gaps?"
   is at least as statistically strong as semiprime factorization.
+* Uses a modified version of my https://github.com/compromise-evident/rolling-code
 
 <br>
 <br>
