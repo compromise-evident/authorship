@@ -155,6 +155,7 @@ along with the hash of that new list
 
 # Security
 
+* * Uses a modified version of my https://github.com/compromise-evident/rolling-code , which means...
 * Because ```digit_length = 200```... Just once, you must provide any file of
   200+ random first bytes. This creates a
   rolling-seeds file containing a 200-digit value, near which prime gaps are
@@ -167,7 +168,6 @@ along with the hash of that new list
   a concatenation of prime gaps near a key.
 * "Near which private prime, will I find these public gaps?"
   is at least as statistically strong as semiprime factorization.
-* Uses a modified version of my https://github.com/compromise-evident/rolling-code
 
 <br>
 <br>
