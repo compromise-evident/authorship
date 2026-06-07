@@ -155,7 +155,7 @@ along with the hash of that new list
 
 # Security
 
-* * Uses a modified version of my https://github.com/compromise-evident/rolling-code , which means...
+* Uses a modified version of my https://github.com/compromise-evident/rolling-code , which means...
 * Because ```digit_length = 200```... Just once, you must provide any file of
   200+ random first bytes. This creates a
   rolling-seeds file containing a 200-digit value, near which prime gaps are
