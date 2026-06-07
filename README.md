@@ -155,8 +155,8 @@ along with the hash of that new list
 
 # Security
 
-Because ```digit_length = 200```,
-* Just once, you must provide any file of 200+ random first bytes. This creates a
+* Because ```digit_length = 200```... Just once, you must provide any file of
+  200+ random first bytes. This creates a
   rolling-seeds file containing a 200-digit value, near which prime gaps are
   found, for generating randomness.
   Continued gaps are then used for the randomness in changing that value.
