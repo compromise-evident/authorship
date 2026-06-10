@@ -1,14 +1,14 @@
 Line 1. 512 ciphertext
 Line 2. 256 keys
 Line 3. 512 presence & absence indicators (Tells which ciphertext to decrypt and which to ignore).
-Line 4. Their message                     (Authenticated; sha512sum hash of last 3 lines is actually what's represented by key presence & absence).
-Line 5. Their new number                  (Authenticated; sha512sum hash of last 3 lines is actually what's represented by key presence & absence).
+Line 4. Their message                     (Authenticated; a SHA-512 hash of the last 3 lines is actually what's represented by key presence & absence).
+Line 5. Their new number                  (Authenticated; a SHA-512 hash of the last 3 lines is actually what's represented by key presence & absence).
 Line 6. Approximately 15 zeros
 
 
 
 Zeros in line 6 make the last 3
-lines produce a sha512sum hash
+lines produce a SHA-512 hash
 with 256 0 bits and 256 1 bits.
 
 Hence strictly 256 keys are used.
