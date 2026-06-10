@@ -2,7 +2,7 @@ Run it: ```apt install g++ geany libgmp-dev libssl-dev```. Open the .cpp in Gean
 Append ```-lgmp -lcrypto``` to Geany's compile & build commands. Hit F9 once. F5 to run.
 
 <p align="center">
-  <img src="Other/Terminal.png">
+  <img src="docs/terminal.png">
 </p>
 
 <br>
@@ -11,7 +11,7 @@ Append ```-lgmp -lcrypto``` to Geany's compile & build commands. Hit F9 once. F5
 # How it works
 
 <p align="center">
-  <img src="Other/how_it_works.png">
+  <img src="docs/how_it_works.png">
 </p>
 
 You can't prove that you created your content, or that
@@ -147,7 +147,7 @@ along with the hash of that new list
 *   **And cryptocurrency:**
 
 <p align="center">
-  <img src="Other/Cryptocurrency_81045ad8faed316fba71a14666de0565.png">
+  <img src="docs/cryptocurrency.png">
 </p>
 
 <br>
