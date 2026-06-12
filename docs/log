@@ -1,6 +1,6 @@
-Authorship
-
-
+Version 9.0.1   No dependencies for SHA-512 (it's now a 1-liner of raw
+                unoptimized math, that doesn't require any lib).
+                2026_06_12
 
 Version 9.0.0   Secure (using modified rolling-code 5.0.1). Remastered.
                 2026_05_31
