@@ -1,5 +1,5 @@
-Run it: ```apt install g++ geany libgmp-dev libssl-dev```. Open the .cpp in Geany.<br>
-Append ```-lgmp -lcrypto``` to Geany's compile & build commands. Hit F9 once. F5 to run.
+Run it: ```apt install g++ geany libgmp-dev```. Open the .cpp in Geany.<br>
+Append ```-lgmp``` to Geany's compile & build commands. Hit F9 once. F5 to run.
 
 <p align="center">
   <img src="docs/terminal.png">
@@ -138,7 +138,7 @@ along with the hash of that new list
     authentication for each and every byte. Here, the service's number is not
     modified per user since that would require all users to catch up on verification
     as they wait their turn with the service. Instead, the service modifies its main
-    number once with a message containing the sha256sum of a text file of specified
+    number once with a message containing the SHA-256 hash of a text file of specified
     size uploaded separately. This text file contains one million new
     numbers--each disposable and dedicated to one user. Meanwhile, the service's
     new main number awaits future visitors who were forced to verify only once so far.
