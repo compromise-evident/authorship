@@ -1,9 +1,9 @@
-//YOUR CONTROLS:                                                                Run it: "apt install g++ geany libgmp-dev libssl-dev". Open the .cpp in Geany.
-int digit_length = 200; //50000 max                                             //Append "-lgmp -lcrypto" to Geany's compile & build commands. Hit F9 once. F5 to run.
+//YOUR CONTROLS:                                                                Run it: "apt install g++ geany libgmp-dev". Open the .cpp in Geany.
+int digit_length = 50; //50000 max                                             //Append "-lgmp" to Geany's compile & build commands. Hit F9 once. F5 to run.
 //digit_length is the length of a (jumping) value, near which
 //prime gaps are found, for randomness. Bigger = more secure.
 
-/*Version 9.0.0
+/*Version 9.0.1
 Get a secure number only you can modify, which anyone can
 keep verifying, and you can insert personal messages (data
 authentication independent of encryption type & symmetry).*/
@@ -13,13 +13,16 @@ authentication independent of encryption type & symmetry).*/
 #include <fstream>
 #include <gmp.h> //For primes
 #include <iostream>
-#include <openssl/evp.h> //For hash
+#include <string>
 using namespace std;
 int main()
 {	int raw_byte;
 	char file_byte;
 	ifstream in_stream;
 	ofstream out_stream;
+	
+	std::string SHA_512_input;
+	std::string SHA_512_output;
 	
 	cout << "\n(1) Create   Your number which others save."
 	     << "\n(2) Modify   Creates a disposable public file with which others verify."
@@ -116,12 +119,11 @@ int main()
 		in_stream.close();
 		out_stream.close();
 		
-		//Creates the number file (takes a sha512sum hash of the 512 ciphertext).
-		string input; in_stream.open("Personal/private/512_ciphertext"); getline(in_stream, input); in_stream.close();
-		unsigned char hash[64]; EVP_Q_digest(nullptr, "SHA512", nullptr, input.c_str(), input.length(), hash, nullptr);
-		string sha512sum; char symbols[] = "0123456789abcdef"; for(int a = 0; a < 64; a++) {sha512sum += symbols[hash[a] >> 4]; sha512sum += symbols[hash[a] & 0xf];}
+		//Creates the number file (takes a SHA-512 hash of the 512 ciphertext).
+		in_stream.open("Personal/private/512_ciphertext"); getline(in_stream, SHA_512_input); in_stream.close();
+		{SHA_512_output = ""; std::string msg = SHA_512_input; unsigned long long H[8] = {0x6a09e667f3bcc908ULL, 0xbb67ae8584caa73bULL, 0x3c6ef372fe94f82bULL, 0xa54ff53a5f1d36f1ULL, 0x510e527fade682d1ULL, 0x9b05688c2b3e6c1fULL, 0x1f83d9abfb41bd6bULL, 0x5be0cd19137e2179ULL}; const unsigned long long K[80] = {0x428a2f98d728ae22ULL, 0x7137449123ef65cdULL, 0xb5c0fbcfec4d3b2fULL, 0xe9b5dba58189dbbcULL, 0x3956c25bf348b538ULL, 0x59f111f1b605d019ULL, 0x923f82a4af194f9bULL, 0xab1c5ed5da6d8118ULL, 0xd807aa98a3030242ULL, 0x12835b0145706fbeULL, 0x243185be4ee4b28cULL, 0x550c7dc3d5ffb4e2ULL, 0x72be5d74f27b896fULL, 0x80deb1fe3b1696b1ULL, 0x9bdc06a725c71235ULL, 0xc19bf174cf692694ULL, 0xe49b69c19ef14ad2ULL, 0xefbe4786384f25e3ULL, 0x0fc19dc68b8cd5b5ULL, 0x240ca1cc77ac9c65ULL, 0x2de92c6f592b0275ULL, 0x4a7484aa6ea6e483ULL, 0x5cb0a9dcbd41fbd4ULL, 0x76f988da831153b5ULL, 0x983e5152ee66dfabULL, 0xa831c66d2db43210ULL, 0xb00327c898fb213fULL, 0xbf597fc7beef0ee4ULL, 0xc6e00bf33da88fc2ULL, 0xd5a79147930aa725ULL, 0x06ca6351e003826fULL, 0x142929670a0e6e70ULL, 0x27b70a8546d22ffcULL, 0x2e1b21385c26c926ULL, 0x4d2c6dfc5ac42aedULL, 0x53380d139d95b3dfULL, 0x650a73548baf63deULL, 0x766a0abb3c77b2a8ULL, 0x81c2c92e47edaee6ULL, 0x92722c851482353bULL, 0xa2bfe8a14cf10364ULL, 0xa81a664bbc423001ULL, 0xc24b8b70d0f89791ULL, 0xc76c51a30654be30ULL, 0xd192e819d6ef5218ULL, 0xd69906245565a910ULL, 0xf40e35855771202aULL, 0x106aa07032bbd1b8ULL, 0x19a4c116b8d2d0c8ULL, 0x1e376c085141ab53ULL, 0x2748774cdf8eeb99ULL, 0x34b0bcb5e19b48a8ULL, 0x391c0cb3c5c95a63ULL, 0x4ed8aa4ae3418acbULL, 0x5b9cca4f7763e373ULL, 0x682e6ff3d6b2b8a3ULL, 0x748f82ee5defb2fcULL, 0x78a5636f43172f60ULL, 0x84c87814a1f0ab72ULL, 0x8cc702081a6439ecULL, 0x90befffa23631e28ULL, 0xa4506cebde82bde9ULL, 0xbef9a3f7b2c67915ULL, 0xc67178f2e372532bULL, 0xca273eceea26619cULL, 0xd186b8c721c0c207ULL, 0xeada7dd6cde0eb1eULL, 0xf57d4f7fee6ed178ULL, 0x06f067aa72176fbaULL, 0x0a637dc5a2c898a6ULL, 0x113f9804bef90daeULL, 0x1b710b35131c471bULL, 0x28db77f523047d84ULL, 0x32caab7b40c72493ULL, 0x3c9ebe0a15c9bebcULL, 0x431d67c49c100d4cULL, 0x4cc5d4becb3e42b6ULL, 0x597f299cfc657e2aULL, 0x5fcb6fab3ad6faecULL, 0x6c44198c4a475817ULL}; unsigned long long orig_len_bits = msg.length() * 8ULL; msg.push_back((char)0x80); for(; (msg.length() % 128) != 112;) {msg.push_back((char)0x00);} msg.append(8, (char)0x00); for(int a = 0; a < 8; a++) {msg.push_back((char)((orig_len_bits >> (56 - a * 8)) & 0xFF));} for(unsigned long long offset = 0; offset < msg.length(); offset += 128) {unsigned long long W[80]; for(int i = 0; i < 16; i++) {unsigned long long p = offset + (i * 8); W[i] = ((unsigned long long)(unsigned char)msg[p + 0] << 56) | ((unsigned long long)(unsigned char)msg[p + 1] << 48) | ((unsigned long long)(unsigned char)msg[p + 2] << 40) | ((unsigned long long)(unsigned char)msg[p + 3] << 32) | ((unsigned long long)(unsigned char)msg[p + 4] << 24) | ((unsigned long long)(unsigned char)msg[p + 5] << 16) | ((unsigned long long)(unsigned char)msg[p + 6] <<  8) | ((unsigned long long)(unsigned char)msg[p + 7]);} for(int i = 16; i < 80; i++) {unsigned long long x0 = W[i - 15]; unsigned long long s0 = ((x0 >> 1) | (x0 << 63)) ^ ((x0 >> 8) | (x0 << 56)) ^ (x0 >> 7); unsigned long long x1 = W[i - 2]; unsigned long long s1 = ((x1 >> 19) | (x1 << 45)) ^ ((x1 >> 61) | (x1 << 3)) ^ (x1 >> 6); W[i] = s1 + W[i - 7] + s0 + W[i - 16];} unsigned long long a = H[0], b = H[1], c = H[2], d = H[3], e = H[4], f = H[5], g = H[6], h = H[7]; for(int i = 0; i < 80; i++) {unsigned long long bs1 = ((e >> 14) | (e << 50)) ^ ((e >> 18) | (e << 46)) ^ ((e >> 41) | (e << 23)); unsigned long long ch  = (e & f) ^ (~e & g); unsigned long long T1  = h + bs1 + ch + K[i] + W[i]; unsigned long long bs0 = ((a >> 28) | (a << 36)) ^ ((a >> 34) | (a << 30)) ^ ((a >> 39) | (a << 25)); unsigned long long maj = (a & b) ^ (a & c) ^ (b & c); unsigned long long T2  = bs0 + maj; h = g; g = f; f = e; e = d + T1; d = c; c = b; b = a; a = T1 + T2;} H[0] += a; H[1] += b; H[2] += c; H[3] += d; H[4] += e; H[5] += f; H[6] += g; H[7] += h;} const char symbols[] = "0123456789abcdef"; for(int a = 0; a < 8; a++) {for(int b = 15; b >= 0; b--) {int nibble = (H[a] >> (b * 4)) & 0xF; SHA_512_output += symbols[nibble];}}}
 		
-		out_stream.open("Personal/number"); out_stream << sha512sum; out_stream.close();
+		out_stream.open("Personal/number"); out_stream << SHA_512_output; out_stream.close();
 		cout << "\nYour \"Personal\" folder is ready. Publish your number.\n";
 	}
 	
@@ -141,13 +143,13 @@ int main()
 		if(message[0] != '\0') {existence_of_message = true;}
 		
 		//Creates paths.
-		string path_to_keys                      = (path + "/private/512_keys"                 );
-		string path_to_ciphertext                = (path + "/private/512_ciphertext"           );
-		string path_to_private_seeds             = (path + "/private/private_seeds"            );
-		string path_to_public                    = (path + "/public"                           );
-		string path_to_number                    = (path + "/number"                           );
-		string path_to_representing_sha512sum_of = (path + "/private/representing_sha512sum_of");
-		string path_to_the_sha512sum             = (path + "/private/the_sha512sum"            );
+		string path_to_keys                    = (path + "/private/512_keys"               );
+		string path_to_ciphertext              = (path + "/private/512_ciphertext"         );
+		string path_to_private_seeds           = (path + "/private/private_seeds"          );
+		string path_to_public                  = (path + "/public"                         );
+		string path_to_number                  = (path + "/number"                         );
+		string path_to_representing_SHA_512_of = (path + "/private/representing_SHA-512_of");
+		string path_to_the_SHA_512             = (path + "/private/the_SHA-512"            );
 		
 		//Copies ciphertext to new file "public".
 		string line;
@@ -220,44 +222,41 @@ int main()
 			in_stream.close();
 			out_stream.close();
 			
-			//Creates the number file (takes a sha512sum hash of the 512 ciphertext).
-			string input; in_stream.open(path_to_ciphertext); getline(in_stream, input); in_stream.close();
-			unsigned char hash[64]; EVP_Q_digest(nullptr, "SHA512", nullptr, input.c_str(), input.length(), hash, nullptr);
-			string sha512sum; char symbols[] = "0123456789abcdef"; for(int a = 0; a < 64; a++) {sha512sum += symbols[hash[a] >> 4]; sha512sum += symbols[hash[a] & 0xf];}
+			//Creates the number file (takes a SHA-512 hash of the 512 ciphertext).
+			in_stream.open(path_to_ciphertext); getline(in_stream, SHA_512_input); in_stream.close();
+			{SHA_512_output = ""; std::string msg = SHA_512_input; unsigned long long H[8] = {0x6a09e667f3bcc908ULL, 0xbb67ae8584caa73bULL, 0x3c6ef372fe94f82bULL, 0xa54ff53a5f1d36f1ULL, 0x510e527fade682d1ULL, 0x9b05688c2b3e6c1fULL, 0x1f83d9abfb41bd6bULL, 0x5be0cd19137e2179ULL}; const unsigned long long K[80] = {0x428a2f98d728ae22ULL, 0x7137449123ef65cdULL, 0xb5c0fbcfec4d3b2fULL, 0xe9b5dba58189dbbcULL, 0x3956c25bf348b538ULL, 0x59f111f1b605d019ULL, 0x923f82a4af194f9bULL, 0xab1c5ed5da6d8118ULL, 0xd807aa98a3030242ULL, 0x12835b0145706fbeULL, 0x243185be4ee4b28cULL, 0x550c7dc3d5ffb4e2ULL, 0x72be5d74f27b896fULL, 0x80deb1fe3b1696b1ULL, 0x9bdc06a725c71235ULL, 0xc19bf174cf692694ULL, 0xe49b69c19ef14ad2ULL, 0xefbe4786384f25e3ULL, 0x0fc19dc68b8cd5b5ULL, 0x240ca1cc77ac9c65ULL, 0x2de92c6f592b0275ULL, 0x4a7484aa6ea6e483ULL, 0x5cb0a9dcbd41fbd4ULL, 0x76f988da831153b5ULL, 0x983e5152ee66dfabULL, 0xa831c66d2db43210ULL, 0xb00327c898fb213fULL, 0xbf597fc7beef0ee4ULL, 0xc6e00bf33da88fc2ULL, 0xd5a79147930aa725ULL, 0x06ca6351e003826fULL, 0x142929670a0e6e70ULL, 0x27b70a8546d22ffcULL, 0x2e1b21385c26c926ULL, 0x4d2c6dfc5ac42aedULL, 0x53380d139d95b3dfULL, 0x650a73548baf63deULL, 0x766a0abb3c77b2a8ULL, 0x81c2c92e47edaee6ULL, 0x92722c851482353bULL, 0xa2bfe8a14cf10364ULL, 0xa81a664bbc423001ULL, 0xc24b8b70d0f89791ULL, 0xc76c51a30654be30ULL, 0xd192e819d6ef5218ULL, 0xd69906245565a910ULL, 0xf40e35855771202aULL, 0x106aa07032bbd1b8ULL, 0x19a4c116b8d2d0c8ULL, 0x1e376c085141ab53ULL, 0x2748774cdf8eeb99ULL, 0x34b0bcb5e19b48a8ULL, 0x391c0cb3c5c95a63ULL, 0x4ed8aa4ae3418acbULL, 0x5b9cca4f7763e373ULL, 0x682e6ff3d6b2b8a3ULL, 0x748f82ee5defb2fcULL, 0x78a5636f43172f60ULL, 0x84c87814a1f0ab72ULL, 0x8cc702081a6439ecULL, 0x90befffa23631e28ULL, 0xa4506cebde82bde9ULL, 0xbef9a3f7b2c67915ULL, 0xc67178f2e372532bULL, 0xca273eceea26619cULL, 0xd186b8c721c0c207ULL, 0xeada7dd6cde0eb1eULL, 0xf57d4f7fee6ed178ULL, 0x06f067aa72176fbaULL, 0x0a637dc5a2c898a6ULL, 0x113f9804bef90daeULL, 0x1b710b35131c471bULL, 0x28db77f523047d84ULL, 0x32caab7b40c72493ULL, 0x3c9ebe0a15c9bebcULL, 0x431d67c49c100d4cULL, 0x4cc5d4becb3e42b6ULL, 0x597f299cfc657e2aULL, 0x5fcb6fab3ad6faecULL, 0x6c44198c4a475817ULL}; unsigned long long orig_len_bits = msg.length() * 8ULL; msg.push_back((char)0x80); for(; (msg.length() % 128) != 112;) {msg.push_back((char)0x00);} msg.append(8, (char)0x00); for(int a = 0; a < 8; a++) {msg.push_back((char)((orig_len_bits >> (56 - a * 8)) & 0xFF));} for(unsigned long long offset = 0; offset < msg.length(); offset += 128) {unsigned long long W[80]; for(int i = 0; i < 16; i++) {unsigned long long p = offset + (i * 8); W[i] = ((unsigned long long)(unsigned char)msg[p + 0] << 56) | ((unsigned long long)(unsigned char)msg[p + 1] << 48) | ((unsigned long long)(unsigned char)msg[p + 2] << 40) | ((unsigned long long)(unsigned char)msg[p + 3] << 32) | ((unsigned long long)(unsigned char)msg[p + 4] << 24) | ((unsigned long long)(unsigned char)msg[p + 5] << 16) | ((unsigned long long)(unsigned char)msg[p + 6] <<  8) | ((unsigned long long)(unsigned char)msg[p + 7]);} for(int i = 16; i < 80; i++) {unsigned long long x0 = W[i - 15]; unsigned long long s0 = ((x0 >> 1) | (x0 << 63)) ^ ((x0 >> 8) | (x0 << 56)) ^ (x0 >> 7); unsigned long long x1 = W[i - 2]; unsigned long long s1 = ((x1 >> 19) | (x1 << 45)) ^ ((x1 >> 61) | (x1 << 3)) ^ (x1 >> 6); W[i] = s1 + W[i - 7] + s0 + W[i - 16];} unsigned long long a = H[0], b = H[1], c = H[2], d = H[3], e = H[4], f = H[5], g = H[6], h = H[7]; for(int i = 0; i < 80; i++) {unsigned long long bs1 = ((e >> 14) | (e << 50)) ^ ((e >> 18) | (e << 46)) ^ ((e >> 41) | (e << 23)); unsigned long long ch  = (e & f) ^ (~e & g); unsigned long long T1  = h + bs1 + ch + K[i] + W[i]; unsigned long long bs0 = ((a >> 28) | (a << 36)) ^ ((a >> 34) | (a << 30)) ^ ((a >> 39) | (a << 25)); unsigned long long maj = (a & b) ^ (a & c) ^ (b & c); unsigned long long T2  = bs0 + maj; h = g; g = f; f = e; e = d + T1; d = c; c = b; b = a; a = T1 + T2;} H[0] += a; H[1] += b; H[2] += c; H[3] += d; H[4] += e; H[5] += f; H[6] += g; H[7] += h;} const char symbols[] = "0123456789abcdef"; for(int a = 0; a < 8; a++) {for(int b = 15; b >= 0; b--) {int nibble = (H[a] >> (b * 4)) & 0xF; SHA_512_output += symbols[nibble];}}}
 			
-			out_stream.open(path_to_number); out_stream << sha512sum; out_stream.close();
+			out_stream.open(path_to_number); out_stream << SHA_512_output; out_stream.close();
 		}
 		
-		//Writes user message to new file "representing_sha512sum_of".
-		out_stream.open(path_to_representing_sha512sum_of);
+		//Writes user message to new file "representing_SHA-512_of".
+		out_stream.open(path_to_representing_SHA_512_of);
 		if(existence_of_message == true) {out_stream << message;}
 		out_stream << "\n";
 		out_stream.close();
 		
-		//Appends new number to file "representing_sha512sum_of".
+		//Appends new number to file "representing_SHA-512_of".
 		in_stream.open(path_to_number);
-		out_stream.open(path_to_representing_sha512sum_of, ios::app);
+		out_stream.open(path_to_representing_SHA_512_of, ios::app);
 		getline(in_stream, line); out_stream << line << "\n0";
 		in_stream.close();
 		out_stream.close();
 		
-		//Keeps appending 0s to file "representing_sha512sum_of" until its sha512sum hash is composed of 256 1 bits and 256 0 bits.
+		//Keeps appending 0s to file "representing_SHA-512_of" until its SHA-512 hash is composed of 256 1 bits and 256 0 bits.
 		for(int a = 0; a < 100000; a++)
 		{	//Takes a hash.
-			string input;
-			in_stream.open(path_to_representing_sha512sum_of);
-			getline(in_stream, line); input += line; input += '\n';
-			getline(in_stream, line); input += line; input += '\n';
-			getline(in_stream, line); input += line;
+			SHA_512_input = "";
+			long long size = filesystem::file_size(path_to_representing_SHA_512_of); SHA_512_input.resize(size);
+			in_stream.open(path_to_representing_SHA_512_of);
+			in_stream.read(&SHA_512_input[0], size);
 			in_stream.close();
 			
-			unsigned char hash[64]; EVP_Q_digest(nullptr, "SHA512", nullptr, input.c_str(), input.length(), hash, nullptr);
-			string sha512sum; char symbols[] = "0123456789abcdef"; for(int a = 0; a < 64; a++) {sha512sum += symbols[hash[a] >> 4]; sha512sum += symbols[hash[a] & 0xf];}
+			{SHA_512_output = ""; std::string msg = SHA_512_input; unsigned long long H[8] = {0x6a09e667f3bcc908ULL, 0xbb67ae8584caa73bULL, 0x3c6ef372fe94f82bULL, 0xa54ff53a5f1d36f1ULL, 0x510e527fade682d1ULL, 0x9b05688c2b3e6c1fULL, 0x1f83d9abfb41bd6bULL, 0x5be0cd19137e2179ULL}; const unsigned long long K[80] = {0x428a2f98d728ae22ULL, 0x7137449123ef65cdULL, 0xb5c0fbcfec4d3b2fULL, 0xe9b5dba58189dbbcULL, 0x3956c25bf348b538ULL, 0x59f111f1b605d019ULL, 0x923f82a4af194f9bULL, 0xab1c5ed5da6d8118ULL, 0xd807aa98a3030242ULL, 0x12835b0145706fbeULL, 0x243185be4ee4b28cULL, 0x550c7dc3d5ffb4e2ULL, 0x72be5d74f27b896fULL, 0x80deb1fe3b1696b1ULL, 0x9bdc06a725c71235ULL, 0xc19bf174cf692694ULL, 0xe49b69c19ef14ad2ULL, 0xefbe4786384f25e3ULL, 0x0fc19dc68b8cd5b5ULL, 0x240ca1cc77ac9c65ULL, 0x2de92c6f592b0275ULL, 0x4a7484aa6ea6e483ULL, 0x5cb0a9dcbd41fbd4ULL, 0x76f988da831153b5ULL, 0x983e5152ee66dfabULL, 0xa831c66d2db43210ULL, 0xb00327c898fb213fULL, 0xbf597fc7beef0ee4ULL, 0xc6e00bf33da88fc2ULL, 0xd5a79147930aa725ULL, 0x06ca6351e003826fULL, 0x142929670a0e6e70ULL, 0x27b70a8546d22ffcULL, 0x2e1b21385c26c926ULL, 0x4d2c6dfc5ac42aedULL, 0x53380d139d95b3dfULL, 0x650a73548baf63deULL, 0x766a0abb3c77b2a8ULL, 0x81c2c92e47edaee6ULL, 0x92722c851482353bULL, 0xa2bfe8a14cf10364ULL, 0xa81a664bbc423001ULL, 0xc24b8b70d0f89791ULL, 0xc76c51a30654be30ULL, 0xd192e819d6ef5218ULL, 0xd69906245565a910ULL, 0xf40e35855771202aULL, 0x106aa07032bbd1b8ULL, 0x19a4c116b8d2d0c8ULL, 0x1e376c085141ab53ULL, 0x2748774cdf8eeb99ULL, 0x34b0bcb5e19b48a8ULL, 0x391c0cb3c5c95a63ULL, 0x4ed8aa4ae3418acbULL, 0x5b9cca4f7763e373ULL, 0x682e6ff3d6b2b8a3ULL, 0x748f82ee5defb2fcULL, 0x78a5636f43172f60ULL, 0x84c87814a1f0ab72ULL, 0x8cc702081a6439ecULL, 0x90befffa23631e28ULL, 0xa4506cebde82bde9ULL, 0xbef9a3f7b2c67915ULL, 0xc67178f2e372532bULL, 0xca273eceea26619cULL, 0xd186b8c721c0c207ULL, 0xeada7dd6cde0eb1eULL, 0xf57d4f7fee6ed178ULL, 0x06f067aa72176fbaULL, 0x0a637dc5a2c898a6ULL, 0x113f9804bef90daeULL, 0x1b710b35131c471bULL, 0x28db77f523047d84ULL, 0x32caab7b40c72493ULL, 0x3c9ebe0a15c9bebcULL, 0x431d67c49c100d4cULL, 0x4cc5d4becb3e42b6ULL, 0x597f299cfc657e2aULL, 0x5fcb6fab3ad6faecULL, 0x6c44198c4a475817ULL}; unsigned long long orig_len_bits = msg.length() * 8ULL; msg.push_back((char)0x80); for(; (msg.length() % 128) != 112;) {msg.push_back((char)0x00);} msg.append(8, (char)0x00); for(int a = 0; a < 8; a++) {msg.push_back((char)((orig_len_bits >> (56 - a * 8)) & 0xFF));} for(unsigned long long offset = 0; offset < msg.length(); offset += 128) {unsigned long long W[80]; for(int i = 0; i < 16; i++) {unsigned long long p = offset + (i * 8); W[i] = ((unsigned long long)(unsigned char)msg[p + 0] << 56) | ((unsigned long long)(unsigned char)msg[p + 1] << 48) | ((unsigned long long)(unsigned char)msg[p + 2] << 40) | ((unsigned long long)(unsigned char)msg[p + 3] << 32) | ((unsigned long long)(unsigned char)msg[p + 4] << 24) | ((unsigned long long)(unsigned char)msg[p + 5] << 16) | ((unsigned long long)(unsigned char)msg[p + 6] <<  8) | ((unsigned long long)(unsigned char)msg[p + 7]);} for(int i = 16; i < 80; i++) {unsigned long long x0 = W[i - 15]; unsigned long long s0 = ((x0 >> 1) | (x0 << 63)) ^ ((x0 >> 8) | (x0 << 56)) ^ (x0 >> 7); unsigned long long x1 = W[i - 2]; unsigned long long s1 = ((x1 >> 19) | (x1 << 45)) ^ ((x1 >> 61) | (x1 << 3)) ^ (x1 >> 6); W[i] = s1 + W[i - 7] + s0 + W[i - 16];} unsigned long long a = H[0], b = H[1], c = H[2], d = H[3], e = H[4], f = H[5], g = H[6], h = H[7]; for(int i = 0; i < 80; i++) {unsigned long long bs1 = ((e >> 14) | (e << 50)) ^ ((e >> 18) | (e << 46)) ^ ((e >> 41) | (e << 23)); unsigned long long ch  = (e & f) ^ (~e & g); unsigned long long T1  = h + bs1 + ch + K[i] + W[i]; unsigned long long bs0 = ((a >> 28) | (a << 36)) ^ ((a >> 34) | (a << 30)) ^ ((a >> 39) | (a << 25)); unsigned long long maj = (a & b) ^ (a & c) ^ (b & c); unsigned long long T2  = bs0 + maj; h = g; g = f; f = e; e = d + T1; d = c; c = b; b = a; a = T1 + T2;} H[0] += a; H[1] += b; H[2] += c; H[3] += d; H[4] += e; H[5] += f; H[6] += g; H[7] += h;} const char symbols[] = "0123456789abcdef"; for(int a = 0; a < 8; a++) {for(int b = 15; b >= 0; b--) {int nibble = (H[a] >> (b * 4)) & 0xF; SHA_512_output += symbols[nibble];}}}
 			
-			out_stream.open(path_to_the_sha512sum); out_stream << sha512sum; out_stream.close();
+			out_stream.open(path_to_the_SHA_512); out_stream << SHA_512_output; out_stream.close();
 			
 			//Checks if hash is evenly bit-distributed.
-			in_stream.open(path_to_the_sha512sum);
+			in_stream.open(path_to_the_SHA_512);
 			int zeros_counter = 0;
 			in_stream.get(file_byte);
 			for(; !in_stream.eof(); in_stream.get(file_byte))
@@ -282,16 +281,16 @@ int main()
 			in_stream.close();
 			
 			if(zeros_counter == 256) {break;}
-			out_stream.open(path_to_representing_sha512sum_of, ios::app);
+			out_stream.open(path_to_representing_SHA_512_of, ios::app);
 			out_stream << "0";
 			out_stream.close();
 			
 			if(a == 99999) {cout << "\nError_d2\n"; return 0;}
 		}
 		
-		//Appends only 256 old keys to file "public" (based on bits from hash in file "the_sha512sum").
+		//Appends only 256 old keys to file "public" (based on bits from hash in file "the_SHA-512").
 		string bin;
-		in_stream.open(path_to_the_sha512sum);
+		in_stream.open(path_to_the_SHA_512);
 		in_stream.get(file_byte);
 		for(; !in_stream.eof(); in_stream.get(file_byte))
 		{	if     (file_byte == '0') {bin += "0000";}
@@ -330,15 +329,15 @@ int main()
 		out_stream << bin << "\n";
 		out_stream.close();
 		
-		//Appends user message and new number to file "public" (all from file "representing_sha512sum_of").
-		in_stream.open(path_to_representing_sha512sum_of);
+		//Appends user message and new number to file "public" (all from file "representing_SHA-512_of").
+		in_stream.open(path_to_representing_SHA_512_of);
 		out_stream.open(path_to_public, ios::app);
 		in_stream.get(file_byte);
 		for(; !in_stream.eof(); in_stream.get(file_byte)) {out_stream.put(file_byte);}
 		in_stream.close();
 		out_stream.close();
 		
-		cout << "\nModified!"
+		cout << "\nModified! (Your \"number\" file was overwritten with a new number)."
 		     << "\nPublish the \"public\" file so they can update your number.\n";
 	}
 	
@@ -392,12 +391,12 @@ int main()
 		if((occur_0 != 256) || (occur_1 != 256)) {cout << "\nPresence & absence indication must have 256 zeros and 256 ones.\n"; return 0;}
 		
 		//Takes hash of ciphertext.
-		unsigned char hash[64]; EVP_Q_digest(nullptr, "SHA512", nullptr, ciphertext.c_str(), ciphertext.length(), hash, nullptr);
-		string hash_of_ciphertext; char symbols[] = "0123456789abcdef"; for(int a = 0; a < 64; a++) {hash_of_ciphertext += symbols[hash[a] >> 4]; hash_of_ciphertext += symbols[hash[a] & 0xf];}
+		SHA_512_input = ciphertext;
+		{SHA_512_output = ""; std::string msg = SHA_512_input; unsigned long long H[8] = {0x6a09e667f3bcc908ULL, 0xbb67ae8584caa73bULL, 0x3c6ef372fe94f82bULL, 0xa54ff53a5f1d36f1ULL, 0x510e527fade682d1ULL, 0x9b05688c2b3e6c1fULL, 0x1f83d9abfb41bd6bULL, 0x5be0cd19137e2179ULL}; const unsigned long long K[80] = {0x428a2f98d728ae22ULL, 0x7137449123ef65cdULL, 0xb5c0fbcfec4d3b2fULL, 0xe9b5dba58189dbbcULL, 0x3956c25bf348b538ULL, 0x59f111f1b605d019ULL, 0x923f82a4af194f9bULL, 0xab1c5ed5da6d8118ULL, 0xd807aa98a3030242ULL, 0x12835b0145706fbeULL, 0x243185be4ee4b28cULL, 0x550c7dc3d5ffb4e2ULL, 0x72be5d74f27b896fULL, 0x80deb1fe3b1696b1ULL, 0x9bdc06a725c71235ULL, 0xc19bf174cf692694ULL, 0xe49b69c19ef14ad2ULL, 0xefbe4786384f25e3ULL, 0x0fc19dc68b8cd5b5ULL, 0x240ca1cc77ac9c65ULL, 0x2de92c6f592b0275ULL, 0x4a7484aa6ea6e483ULL, 0x5cb0a9dcbd41fbd4ULL, 0x76f988da831153b5ULL, 0x983e5152ee66dfabULL, 0xa831c66d2db43210ULL, 0xb00327c898fb213fULL, 0xbf597fc7beef0ee4ULL, 0xc6e00bf33da88fc2ULL, 0xd5a79147930aa725ULL, 0x06ca6351e003826fULL, 0x142929670a0e6e70ULL, 0x27b70a8546d22ffcULL, 0x2e1b21385c26c926ULL, 0x4d2c6dfc5ac42aedULL, 0x53380d139d95b3dfULL, 0x650a73548baf63deULL, 0x766a0abb3c77b2a8ULL, 0x81c2c92e47edaee6ULL, 0x92722c851482353bULL, 0xa2bfe8a14cf10364ULL, 0xa81a664bbc423001ULL, 0xc24b8b70d0f89791ULL, 0xc76c51a30654be30ULL, 0xd192e819d6ef5218ULL, 0xd69906245565a910ULL, 0xf40e35855771202aULL, 0x106aa07032bbd1b8ULL, 0x19a4c116b8d2d0c8ULL, 0x1e376c085141ab53ULL, 0x2748774cdf8eeb99ULL, 0x34b0bcb5e19b48a8ULL, 0x391c0cb3c5c95a63ULL, 0x4ed8aa4ae3418acbULL, 0x5b9cca4f7763e373ULL, 0x682e6ff3d6b2b8a3ULL, 0x748f82ee5defb2fcULL, 0x78a5636f43172f60ULL, 0x84c87814a1f0ab72ULL, 0x8cc702081a6439ecULL, 0x90befffa23631e28ULL, 0xa4506cebde82bde9ULL, 0xbef9a3f7b2c67915ULL, 0xc67178f2e372532bULL, 0xca273eceea26619cULL, 0xd186b8c721c0c207ULL, 0xeada7dd6cde0eb1eULL, 0xf57d4f7fee6ed178ULL, 0x06f067aa72176fbaULL, 0x0a637dc5a2c898a6ULL, 0x113f9804bef90daeULL, 0x1b710b35131c471bULL, 0x28db77f523047d84ULL, 0x32caab7b40c72493ULL, 0x3c9ebe0a15c9bebcULL, 0x431d67c49c100d4cULL, 0x4cc5d4becb3e42b6ULL, 0x597f299cfc657e2aULL, 0x5fcb6fab3ad6faecULL, 0x6c44198c4a475817ULL}; unsigned long long orig_len_bits = msg.length() * 8ULL; msg.push_back((char)0x80); for(; (msg.length() % 128) != 112;) {msg.push_back((char)0x00);} msg.append(8, (char)0x00); for(int a = 0; a < 8; a++) {msg.push_back((char)((orig_len_bits >> (56 - a * 8)) & 0xFF));} for(unsigned long long offset = 0; offset < msg.length(); offset += 128) {unsigned long long W[80]; for(int i = 0; i < 16; i++) {unsigned long long p = offset + (i * 8); W[i] = ((unsigned long long)(unsigned char)msg[p + 0] << 56) | ((unsigned long long)(unsigned char)msg[p + 1] << 48) | ((unsigned long long)(unsigned char)msg[p + 2] << 40) | ((unsigned long long)(unsigned char)msg[p + 3] << 32) | ((unsigned long long)(unsigned char)msg[p + 4] << 24) | ((unsigned long long)(unsigned char)msg[p + 5] << 16) | ((unsigned long long)(unsigned char)msg[p + 6] <<  8) | ((unsigned long long)(unsigned char)msg[p + 7]);} for(int i = 16; i < 80; i++) {unsigned long long x0 = W[i - 15]; unsigned long long s0 = ((x0 >> 1) | (x0 << 63)) ^ ((x0 >> 8) | (x0 << 56)) ^ (x0 >> 7); unsigned long long x1 = W[i - 2]; unsigned long long s1 = ((x1 >> 19) | (x1 << 45)) ^ ((x1 >> 61) | (x1 << 3)) ^ (x1 >> 6); W[i] = s1 + W[i - 7] + s0 + W[i - 16];} unsigned long long a = H[0], b = H[1], c = H[2], d = H[3], e = H[4], f = H[5], g = H[6], h = H[7]; for(int i = 0; i < 80; i++) {unsigned long long bs1 = ((e >> 14) | (e << 50)) ^ ((e >> 18) | (e << 46)) ^ ((e >> 41) | (e << 23)); unsigned long long ch  = (e & f) ^ (~e & g); unsigned long long T1  = h + bs1 + ch + K[i] + W[i]; unsigned long long bs0 = ((a >> 28) | (a << 36)) ^ ((a >> 34) | (a << 30)) ^ ((a >> 39) | (a << 25)); unsigned long long maj = (a & b) ^ (a & c) ^ (b & c); unsigned long long T2  = bs0 + maj; h = g; g = f; f = e; e = d + T1; d = c; c = b; b = a; a = T1 + T2;} H[0] += a; H[1] += b; H[2] += c; H[3] += d; H[4] += e; H[5] += f; H[6] += g; H[7] += h;} const char symbols[] = "0123456789abcdef"; for(int a = 0; a < 8; a++) {for(int b = 15; b >= 0; b--) {int nibble = (H[a] >> (b * 4)) & 0xF; SHA_512_output += symbols[nibble];}}}
 		
 		//Compares hash to the number in the "number" file.
 		string temp_number; in_stream.open(path_to_number); getline(in_stream, temp_number); in_stream.close();
-		if(hash_of_ciphertext != temp_number) {cout << "\nFAILED! That number is not the hash of the ciphertext. Old public file?\n"; in_stream.close(); return 0;}
+		if(SHA_512_output != temp_number) {cout << "\nFAILED! That number is not the hash of the ciphertext. Old public file?\n"; in_stream.close(); return 0;}
 		
 		//Takes hash of user message & number.
 		string last_3_lines;
@@ -405,8 +404,9 @@ int main()
 		last_3_lines += number ; last_3_lines += '\n';
 		last_3_lines += zeros  ;
 		
-		EVP_Q_digest(nullptr, "SHA512", nullptr, last_3_lines.c_str(), last_3_lines.length(), hash, nullptr);
-		string hash_of_last_3_lines; for(int a = 0; a < 64; a++) {hash_of_last_3_lines += symbols[hash[a] >> 4]; hash_of_last_3_lines += symbols[hash[a] & 0xf];}
+		SHA_512_input = last_3_lines;
+		{SHA_512_output = ""; std::string msg = SHA_512_input; unsigned long long H[8] = {0x6a09e667f3bcc908ULL, 0xbb67ae8584caa73bULL, 0x3c6ef372fe94f82bULL, 0xa54ff53a5f1d36f1ULL, 0x510e527fade682d1ULL, 0x9b05688c2b3e6c1fULL, 0x1f83d9abfb41bd6bULL, 0x5be0cd19137e2179ULL}; const unsigned long long K[80] = {0x428a2f98d728ae22ULL, 0x7137449123ef65cdULL, 0xb5c0fbcfec4d3b2fULL, 0xe9b5dba58189dbbcULL, 0x3956c25bf348b538ULL, 0x59f111f1b605d019ULL, 0x923f82a4af194f9bULL, 0xab1c5ed5da6d8118ULL, 0xd807aa98a3030242ULL, 0x12835b0145706fbeULL, 0x243185be4ee4b28cULL, 0x550c7dc3d5ffb4e2ULL, 0x72be5d74f27b896fULL, 0x80deb1fe3b1696b1ULL, 0x9bdc06a725c71235ULL, 0xc19bf174cf692694ULL, 0xe49b69c19ef14ad2ULL, 0xefbe4786384f25e3ULL, 0x0fc19dc68b8cd5b5ULL, 0x240ca1cc77ac9c65ULL, 0x2de92c6f592b0275ULL, 0x4a7484aa6ea6e483ULL, 0x5cb0a9dcbd41fbd4ULL, 0x76f988da831153b5ULL, 0x983e5152ee66dfabULL, 0xa831c66d2db43210ULL, 0xb00327c898fb213fULL, 0xbf597fc7beef0ee4ULL, 0xc6e00bf33da88fc2ULL, 0xd5a79147930aa725ULL, 0x06ca6351e003826fULL, 0x142929670a0e6e70ULL, 0x27b70a8546d22ffcULL, 0x2e1b21385c26c926ULL, 0x4d2c6dfc5ac42aedULL, 0x53380d139d95b3dfULL, 0x650a73548baf63deULL, 0x766a0abb3c77b2a8ULL, 0x81c2c92e47edaee6ULL, 0x92722c851482353bULL, 0xa2bfe8a14cf10364ULL, 0xa81a664bbc423001ULL, 0xc24b8b70d0f89791ULL, 0xc76c51a30654be30ULL, 0xd192e819d6ef5218ULL, 0xd69906245565a910ULL, 0xf40e35855771202aULL, 0x106aa07032bbd1b8ULL, 0x19a4c116b8d2d0c8ULL, 0x1e376c085141ab53ULL, 0x2748774cdf8eeb99ULL, 0x34b0bcb5e19b48a8ULL, 0x391c0cb3c5c95a63ULL, 0x4ed8aa4ae3418acbULL, 0x5b9cca4f7763e373ULL, 0x682e6ff3d6b2b8a3ULL, 0x748f82ee5defb2fcULL, 0x78a5636f43172f60ULL, 0x84c87814a1f0ab72ULL, 0x8cc702081a6439ecULL, 0x90befffa23631e28ULL, 0xa4506cebde82bde9ULL, 0xbef9a3f7b2c67915ULL, 0xc67178f2e372532bULL, 0xca273eceea26619cULL, 0xd186b8c721c0c207ULL, 0xeada7dd6cde0eb1eULL, 0xf57d4f7fee6ed178ULL, 0x06f067aa72176fbaULL, 0x0a637dc5a2c898a6ULL, 0x113f9804bef90daeULL, 0x1b710b35131c471bULL, 0x28db77f523047d84ULL, 0x32caab7b40c72493ULL, 0x3c9ebe0a15c9bebcULL, 0x431d67c49c100d4cULL, 0x4cc5d4becb3e42b6ULL, 0x597f299cfc657e2aULL, 0x5fcb6fab3ad6faecULL, 0x6c44198c4a475817ULL}; unsigned long long orig_len_bits = msg.length() * 8ULL; msg.push_back((char)0x80); for(; (msg.length() % 128) != 112;) {msg.push_back((char)0x00);} msg.append(8, (char)0x00); for(int a = 0; a < 8; a++) {msg.push_back((char)((orig_len_bits >> (56 - a * 8)) & 0xFF));} for(unsigned long long offset = 0; offset < msg.length(); offset += 128) {unsigned long long W[80]; for(int i = 0; i < 16; i++) {unsigned long long p = offset + (i * 8); W[i] = ((unsigned long long)(unsigned char)msg[p + 0] << 56) | ((unsigned long long)(unsigned char)msg[p + 1] << 48) | ((unsigned long long)(unsigned char)msg[p + 2] << 40) | ((unsigned long long)(unsigned char)msg[p + 3] << 32) | ((unsigned long long)(unsigned char)msg[p + 4] << 24) | ((unsigned long long)(unsigned char)msg[p + 5] << 16) | ((unsigned long long)(unsigned char)msg[p + 6] <<  8) | ((unsigned long long)(unsigned char)msg[p + 7]);} for(int i = 16; i < 80; i++) {unsigned long long x0 = W[i - 15]; unsigned long long s0 = ((x0 >> 1) | (x0 << 63)) ^ ((x0 >> 8) | (x0 << 56)) ^ (x0 >> 7); unsigned long long x1 = W[i - 2]; unsigned long long s1 = ((x1 >> 19) | (x1 << 45)) ^ ((x1 >> 61) | (x1 << 3)) ^ (x1 >> 6); W[i] = s1 + W[i - 7] + s0 + W[i - 16];} unsigned long long a = H[0], b = H[1], c = H[2], d = H[3], e = H[4], f = H[5], g = H[6], h = H[7]; for(int i = 0; i < 80; i++) {unsigned long long bs1 = ((e >> 14) | (e << 50)) ^ ((e >> 18) | (e << 46)) ^ ((e >> 41) | (e << 23)); unsigned long long ch  = (e & f) ^ (~e & g); unsigned long long T1  = h + bs1 + ch + K[i] + W[i]; unsigned long long bs0 = ((a >> 28) | (a << 36)) ^ ((a >> 34) | (a << 30)) ^ ((a >> 39) | (a << 25)); unsigned long long maj = (a & b) ^ (a & c) ^ (b & c); unsigned long long T2  = bs0 + maj; h = g; g = f; f = e; e = d + T1; d = c; c = b; b = a; a = T1 + T2;} H[0] += a; H[1] += b; H[2] += c; H[3] += d; H[4] += e; H[5] += f; H[6] += g; H[7] += h;} const char symbols[] = "0123456789abcdef"; for(int a = 0; a < 8; a++) {for(int b = 15; b >= 0; b--) {int nibble = (H[a] >> (b * 4)) & 0xF; SHA_512_output += symbols[nibble];}}}
+		string hash_of_last_3_lines = SHA_512_output;
 		
 		//Decrypts ciphertext to which keys are present.
 		int ciphertext_read_bookmark = 0;
