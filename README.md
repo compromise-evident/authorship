@@ -186,7 +186,7 @@ authentication anyone can understand in 15 seconds.
 # Try it now
 
 Set ```digit_length``` to 30 so Authorship is faster.
-For option 1, drop/enter the UNLICENSE file as the
+For option 1, drop/enter the "UNLICENSE" file as the
 "any file of 30+ random first bytes".
 That should create a number file containing the following,
 which is a SHA-512 hash of the file "512_ciphertext".
