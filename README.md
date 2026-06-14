@@ -179,3 +179,18 @@ systems generally too complex and inaccessible, which led many to uncertainty
 in a time of great public distrust for government.
 This inspired me to search for, discover (Dec 2019), and build Authorship--logical
 authentication anyone can understand in 15 seconds.
+
+<br>
+<br>
+
+# Try it now
+
+Set ```digit_length``` to 30 so Authorship is faster.
+For option 1, drop/enter the UNLICENSE file as the
+"any file of 30+ random first bytes".
+That should create a number file containing the following,
+which is a SHA-512 hash of the file "512_ciphertext".
+
+```text
+a63023fd7a8e50b5337465f61d43f7bfaab6448b55ccf152d96777e85264eb77c44cdd7baf8a8e766e291deb06fcba0840d5a34f5adbb0d65be708d1bee297c0
+```
