@@ -1,14 +1,21 @@
 Run it: ```apt install g++ geany libgmp-dev```. Open the .cpp in Geany.<br>
 Append ```-lgmp``` to Geany's compile & build commands. Hit F9 once. F5 to run.
 
-<p align="center">
-  <img src="docs/terminal.png">
-</p>
-
-<br>
 <br>
 
-# How it works
+### Terminal
+
+```text
+(1) Create   Your number which others save.
+(2) Modify   Creates a disposable public file with which others verify.
+(3) Verify   Their new public file modifies their number file which you saved.
+
+Option: |
+```
+
+<br>
+
+### How it works
 
 <p align="center">
   <img src="docs/how_it_works.png">
@@ -43,7 +50,7 @@ your Authorship number is a simple and accessible
 door to authentication you can later jump from
 to other such systems that have vital features.
 
-### The wrong way
+The wrong way
 
 Let's say you published a list of encrypted items
 then became a target for exposing war crimes.
@@ -59,7 +66,7 @@ How would you have ensured that only you can make your lists point?
 And how would you have ensured that this pointing is publicly verifiable?
 Authorship does just that;
 
-### The right way
+The right way
 
 Again, you published a list of encrypted items
 then became a target for exposing war crimes.
@@ -77,9 +84,8 @@ along with the hash of that new list
 (so as to build an authorized-only relationship with that new list.)
 
 <br>
-<br>
 
-# For
+### For
 
 *   **Exposure is allowed**
     (typically authentication--rolling-code or not--relies
@@ -151,9 +157,8 @@ along with the hash of that new list
 </p>
 
 <br>
-<br>
 
-# Security
+### Security
 
 * Uses a modified version of my https://github.com/compromise-evident/rolling-code , which means...
 * Because ```digit_length = 200```... Just once, you must provide any file of
@@ -170,9 +175,8 @@ along with the hash of that new list
   is at least as statistically strong as semiprime factorization.
 
 <br>
-<br>
 
-# Why
+### Why
 
 Julian Assange and Edward Snowden used cryptographic evidence
 systems generally too complex and inaccessible, which led many to uncertainty
@@ -181,9 +185,8 @@ This inspired me to search for, discover (Dec 2019), and build Authorship--logic
 authentication anyone can understand in 15 seconds.
 
 <br>
-<br>
 
-# Try it now
+### Try it now
 
 Set ```digit_length``` to 30 so Authorship is faster.
 For option 1, drop/enter the "UNLICENSE" file as the
