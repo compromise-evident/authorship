@@ -30,7 +30,7 @@ to any type of encryption;
 Data is authenticated using the binary
 presence & absence of keys to lists of encrypted
 items (hence publicly verifiable yet authorized-only.)
-These encrypted items hide no substance of value,
+These encrypted items and their keys hide no substance of value,
 their purpose is to pose difficulty
 (hence independent of encryption type and symmetry.)
 
