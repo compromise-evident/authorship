@@ -37,9 +37,9 @@ For comprehensibility, the diagram above didn't
 mention the fact that actually, your number is a SHA-512
 hash of 512 encrypted items, making it easy to
 copy-paste numbers onto social media.
-A hash is an intensely compressed version of a file,
+A hash is an intensely compressed version of a file
 where the original file must be provided in order to
-reproduce that hash. And it is statistically difficult
+reproduce that hash, and it is statistically difficult
 to generate an impostor file, or any file,
 responsible for that same hash.
 That's because even a small change to the original file
@@ -54,7 +54,7 @@ to other such systems that have vital features.
 256 keys representing 256 1-bits of a hash? But aren't hashes random?
 512-bit hashes occasionally have 256 1-bits and 256 0-bits.
 But you can modify or append to the input file,
-until its hash IS evenly bit-distributed.
+until its hash IS evenly bit-distributed:
 
 https://github.com/compromise-evident/authentication/blob/main/docs/the_public_file_is_6_lines_of_text
 
