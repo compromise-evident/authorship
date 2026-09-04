@@ -28,10 +28,10 @@ from you--not impersonation. And you're NEVER locked-in
 to any type of encryption;
 Data is authenticated using the binary
 presence & absence of keys to lists of encrypted
-items (hence publicly verifiable yet authorized-only.)
+items (hence publicly verifiable yet authorized-only).
 These encrypted items and their keys hide no substance of value,
 their purpose is to pose difficulty
-(hence independent of encryption type and symmetry.)
+(hence independent of encryption type and symmetry).
 
 For comprehensibility, the diagram above didn't
 mention the fact that actually, your number is a SHA-512
@@ -107,7 +107,7 @@ A relationship anyone can verify.
     contained your authentication number, that ever-changing number
     can be displayed on the door and even made public.
     EVERYTHING you gave the door, and EVERYTHING the
-    door contains, can be safely made public raw.)
+    door contains, can be safely made public raw).
 *   **Compromise-evident device**
     (just as tamper-evident devices prove they've
     been tampered with, this tool proves its user
@@ -119,24 +119,24 @@ A relationship anyone can verify.
     This is how we'll know not to
     trust words under your name
     unless we can verify your
-    number modification. In fact, compromise-evident is my tag because this tool is my centerpiece and my masterpiece.)
+    number modification. In fact, compromise-evident is my tag because this tool is my centerpiece and my masterpiece).
 *   **Canary update authentication**
 *   **Group authorization**
-    (authentication numbers can be assembled using ciphertext from multiple users.)
+    (authentication numbers can be assembled using ciphertext from multiple users).
 *   **Animal theft management**
     (animal biometric data can be assigned to authentication numbers in a ledger; If you can't modify the
     number associated with your animal, it's not your animal. Authority registrars should be able to
-    easily identify animals such as by imaging a cow's wrinkly nose.)
+    easily identify animals such as by imaging a cow's wrinkly nose).
 *   **Voter fraud prevention**
-    (you verify voters whom only registrars identify.)
+    (you verify voters whom only registrars identify).
 *   **Ownership proof**
-    (assign item to authentication number, modify it with their message to prove ownership.)
+    (assign item to authentication number, modify it with their message to prove ownership).
 *   **Cryptographer's acknowledgement**
     (you may need to verify that your new authentication number
     is available to the public or verifying party--as you can be censored in some
     extreme circumstances. Here, the verifying party may arrange to modify their
     number in response and you can rest assured that your authentication
-    event has been acknowledged.)
+    event has been acknowledged).
 *   **Skipping through verification with outdated numbers**
     (here, the proving
     party had published multiple authentication numbers beforehand. Their main number had changed
@@ -146,7 +146,7 @@ A relationship anyone can verify.
     And so the proving party is asked to modify one of their slower numbers of
     higher viscosity. The message for that event instructs all verifying parties
     to overwrite the main number with a new one. Now those catching up have access
-    to periodic verification as if they ran through the entire chain.)
+    to periodic verification as if they ran through the entire chain).
 *   **Disposable sessions without breaking trust**
     (let's say some service had
     published a single authentication number beforehand, and serves one million users on their
@@ -159,7 +159,7 @@ A relationship anyone can verify.
     numbers--each disposable and dedicated to one user. Meanwhile, the service's
     new main number awaits future visitors who were forced to verify only once so far.
     Those without access to the public file for this main event may ask the service
-    to modify a slower number--as done in the previous point.)
+    to modify a slower number--as done in the previous point).
 
 <br>
 
