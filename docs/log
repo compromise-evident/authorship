@@ -1,0 +1,20 @@
+Version 11.0.0  Public file is now 3 lines, not 6. Removed files representing_
+                and the_SHA-512. Key length matches ciphertext length (128).
+                2026_11_08
+
+Version 10.0.0  Uses my rolling-code 6.0.0. Fast, especially verification.
+                2026_07_04
+
+Version 9.0.1   No dependencies for SHA-512 (it's now a 1-liner of raw
+                unoptimized math, that doesn't require any lib).
+                2026_06_12
+
+Version 9.0.0   Secure (using modified rolling-code 5.0.1). Remastered.
+                2026_05_31
+
+Version 8.0.1   rolling-code 3.1.1 integrated. RAM garbage no longer supplements
+                randomness due to RAM on Linux zeroing when allocated and freed.
+                Jul 22 2024
+
+Version 8.0.0   rolling-code.cpp integrated. Remastered ground-up.
+                Feb 15 2024
