@@ -252,16 +252,25 @@ int main()
 		std::string number_and_message;   std::getline(in_stream, number_and_message);
 		in_stream.close();
 		
-		ciphertext.erase(0, 22);
-		keys      .erase(0, 22);
-		if((ciphertext.length() != 65536) || (keys.length() != 65536)) {std::cout << "\nBad \"public\" file.\n"; return 0;}
+		std::string number  = number_and_message;
+		std::string message = number_and_message;
 		
-		std::string number  = number_and_message; number .erase(0,  22); number.resize(128);
-		std::string message = number_and_message; message.erase(0, 151);
+		//Checks and parses public file.
+		if((ciphertext.length() != 65558)
+		|| (keys      .length() != 65558)
+		|| (number_and_message.length() < 152)
+		|| (number_and_message.back() != 'z')
+		|| (number_and_message.find("New number & message: ") != 0)) {std::cout << "\nBad \"public\" file.\n"; return 0;}
+		
+		ciphertext.erase(0,  22);
+		keys      .erase(0,  22);
+		number    .erase(0,  22); number.resize(128);
+		message   .erase(0, 151);
+		
+		if(number.find_first_not_of("0123456789abcdef") != std::string::npos) {std::cout << "\nBad new number.\n"; return 0;}
 		
 		for(; message.back() == 'z';) {message.pop_back();}
 		if(!message.empty()) {message.pop_back();}
-		
 		if(!message.empty())
 		{	for(unsigned long long a = 0; a < message.length(); a++)
 			{	if((message[a] < 32) || (message[a] > 126)) {std::cout << "\nMessage corrupted.\n"; return 0;}
