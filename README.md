@@ -41,7 +41,7 @@ New number & message: 1f0ad0b523e65a7fca28192dbc96d21b319ba95e3a644fa14e8fb00263
 ```
 
 * First, 'z' characters are appended to the last line until the line's hash is bit-balanced.
-* Then, key presence and absence represents that hash.
+* Then, key presence and absence is made to represent that hash.
 * You can use any hash and cipher, no lock-ins.
 
 <br>
