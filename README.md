@@ -66,7 +66,7 @@ New number & message: 1f0ad0b523e65a7fca28192dbc96d21b319ba95e3a644fa14e8fb00263
   Again, you published a list of encrypted items
   then became a target for exposing war crimes.
   Now, when I ask for proof of life, instead of releasing one key,
-  make a NEW list of encrypted items, then selectively release half the keys to that original list, all at once.
+  make a NEW list of encrypted items, then selectively release only half the keys to that original list, all at once.
   And now, as I look at your original list of encrypted items,
   I cross out any that I can decrypt.
   When I take a step back,
