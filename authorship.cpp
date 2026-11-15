@@ -1,9 +1,8 @@
 /*Run it: "apt install g++ geany". Open the .cpp in Geany. Hit F9 once. F5 to run.
 
 Version 11.0.0
-Public authentication using any cipher you can
-imagine. Data is represented by the presence &
-absence of keys to lists of encrypted items.*/
+Public authentication using any cipher you can imagine, because data is
+represented by the presence & absence of keys to lists of encrypted items.*/
 
 #include <filesystem>
 #include <fstream>
