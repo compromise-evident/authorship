@@ -74,7 +74,7 @@ New number & message: 1f0ad0b523e65a7fca28192dbc96d21b319ba95e3a644fa14e8fb00263
   what's crossed out and left uncrossed
   represents ones and zeros not predetermined;
   this one-time data can be anything you make it whenever you make it, even though it comes from something old and unchangeable.
-  And so you make this presence & absence represent (a hash of) your new list of encrypted items, and personal message.
+  And so you make this presence & absence represent (a hash of) your new list of encrypted items, and a personal message of any length.
   This builds an authorized-only relationship with that new list.
   A relationship anyone can verify.
 
