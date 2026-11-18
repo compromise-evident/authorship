@@ -8,6 +8,7 @@ represented by the presence & absence of keys to lists of encrypted items.*/
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <vector>
 int main()
 {	std::ifstream in_stream;
 	std::ofstream out_stream;
@@ -114,8 +115,9 @@ int main()
 		out_stream.close();
 		
 		//Loads old keys to RAM.
+		std::vector <std::string> old_keys;
 		in_stream.open(path_to_keys); if(!in_stream) {std::cout << "\nCan't open file for reading. (Loads old keys to RAM).\n"; return 1;}
-		std::string old_keys; for(std::string file_line; std::getline(in_stream, file_line);) {old_keys += file_line;}
+		for(std::string line; std::getline(in_stream, line);) {old_keys.push_back(line);}
 		in_stream.close();
 		
 		//Generates 512 keys. From rolling-code.cpp.
@@ -208,15 +210,9 @@ int main()
 		//Appends 256 old keys to public file (based on the hash of new number and message).
 		out_stream.open(path_to_public, std::ios::app); if(!out_stream) {std::cout << "\nCan't open file for writing. (Appends 256 old keys).\n"; return 1;}
 		out_stream << "\n256 keys, 256 absent: ";
-		int old_keys_read_bookmark = 0;
 		for(int a = 0; a < 512; a++)
-		{	if(bits[a] == '1')
-			{	for(int b = 0; b < 128; b++) {out_stream << old_keys[old_keys_read_bookmark]; old_keys_read_bookmark++;}
-			}
-			else
-			{	for(int b = 0; b < 128; b++) {out_stream << " ";}
-				old_keys_read_bookmark += 128;
-			}
+		{	if(bits[a] == '1') {out_stream << old_keys[a];}
+			else               {out_stream << "                                                                                                                                ";}
 		}
 		out_stream.close();
 		
